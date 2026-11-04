@@ -1,0 +1,626 @@
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ===== Tradusaun Tetum (só ba hatudu; valór dadus iha planilla la muda) ===== */
+const TT={
+'Individual characteristics':'Karakterístika individuál','Residence & facility':'Hela-fatin no fasilidade',
+'Exposure information':'Informasaun espozisaun','Animal information':'Informasaun animál',
+'Previous vaccination':'Vasinasaun anterior','RIG details':'Detalle RIG','PEP details':'Detalle PEP',
+'Clinical course & outcome':'Evolusaun klínika no rezultadu',
+'Yes':'Sim','No':'Lae','Not Complete':'La kompletu','Complete':'Kompletu','Unknown':'La hatene','(blank)':'(mamuk)',
+'Grade 1':'Kategoria I','Grade 2':'Kategoria II','Grade 3':'Kategoria III',
+'Male':'Mane','Female':'Feto','Dog':'Asu','Cat':'Busa','Monkey':'Lekirauk','Bite':'Tata',
+'Positive':'Pozitivu','Negative':'Negativu','Not tested':'La halo teste',
+'Municipality':'Administradór','Post administrative':'Focal Point','Host':'Host',
+'Municipality / region of residence':'Munisípiu / rejiaun hela-fatin',
+'Administrative post of residence':'Postu administrativu hela-fatin',
+'Age (completed years)':'Idade (tinan kompletu)','Age group (years)':'Grupu idade (tinan)',
+'Date of birth':'Data moris','Health Facility (SSK)':'Hospital/SSK/Klinika Privada','Registration date':'Data rejistu',
+'Exposure date (animal bite)':'Data espozisaun (animál tata)',
+'PEP day 0: date given':'PEP loron 0: data fó','PEP day 3: date given':'PEP loron 3: data fó','PEP day 7: date given':'PEP loron 7: data fó',
+'PEP dose 4 (day 14-28): date given':'Doze 4 (loron 14-28): data sona','Vaccine dose status':'Statutu vasina','Vaccination site':'Fatin vasina',
+'In progress':'Iha progresu','Outpatient':'Ambulatóriu','Treatment':'Tratamentu','Animal clinical signs':'Sinál klíniku animál',
+'Admission date':'Data baixa','Symptom onset date':'Data sintoma hahú','Death date':'Data mate',
+'Exposure latitude (decimal degrees)':'Latitude fatin espozisaun (grau desimál)','Exposure longitude (decimal degrees)':'Longitude fatin espozisaun (grau desimál)',
+'Rabies exposure category':'Kategoria espozisaun raiva','PEP course completed':'Kursu PEP kompletu',
+'Reporting year':'Tinan relatóriu','Reporting week':'Semana epidemiolójika','Record No.':'Nú. rejistu','Full name':'Naran kompletu',
+'Sex':'Generu','Weight (kg)':'Todan (kg)','Contact phone number':'Nú. kontaktu','Suco of residence':'Suku hela-fatin','Type of exposure':'Tipu espozisaun','Bite provoked':'Tata ho provokasaun',
+'Wound bleeding':'Kanek ran sai','Wound washed for >15 minutes':'Kanek fase liu minutu 15','Bite / wound body site(s)':"Fatin iha isin ne'ebé tata / kanek",
+'Animal species':'Espésie animál','Dog ownership status':"Estatutu Na'in ba Animál",'Animal condition after bite':'Kondisaun animál hafoin tata',
+'Animal vaccinated against rabies in past year':'Animál simu vasina raiva iha tinan kotuk','10-day animal observation completed':'Observasaun animál loron 10 kompletu',
+'Animal laboratory result':'Rezultadu laboratóriu animál','Planned PEP regimen':'Rejime PEP planeadu',
+'Rabies immunoglobulin received':'Simu imunoglobulina raiva (RIG)','Previously received >=2 rabies vaccine doses (IM/ID)':'Simu ona vasina raiva >=2 dóze molok ne\'e (IM/ID)',
+'Adverse event after rabies vaccination':'Eventu adversu hafoin vasina raiva'
+};
+Object.assign(TT,{
+/* --- Naran kampu seluk --- */
+'Number of wounds':'Númeru kanek','Skin broken':'Kulit kanek','Wound depth':'Kle\'an kanek','Exposure time':'Oras espozisaun',
+'Animal clinical signs':'Sinál klíniku animál','Date animal last seen alive':'Data ikus animál moris',
+'Rabies-positive dog ID':'ID asu pozitivu raiva','Animal specimen collected':'Foti ona espésime animál',
+'Animal specimen / laboratory ID':'ID espésime / laboratóriu animál','Phone number':'Númeru telefone','Occupation':'Okupasaun',
+'Aldeia of residence':'Aldeia hela-fatin','Exposure location':'Fatin espozisaun','Notes':'Nota','Comments':'Komentáriu',
+'Vaccine type':'Tipu vasina','Route of administration':'Rota administrasaun','RIG type':'Tipu RIG','RIG dose':'Dóze RIG',
+'RIG date given':'Data fó RIG','Outcome':'Rezultadu','Clinical signs':'Sinál klíniku','Patient outcome':'Rezultadu pasiente',
+/* --- Opsaun resposta --- */
+"Don't Know":'La hatene',"Don't know":'La hatene','Not applicable':'La aplika','N/A':'La aplika','Other':'Seluk','Others':'Seluk',
+'Not Vaccinated':'Seidauk vasina','Not vaccinated':'Seidauk vasina','Vaccinated':'Vasina ona',
+'Superficial':'Superfisiál','Deep':"Kle'an",'Single':'Ida de\'it','Multiple':'Barak',
+'Head':'Ulun','Head/neck':'Ulun/kakorok','Head / neck':'Ulun / kakorok','Face':'Oin','Neck':'Kakorok','Hand':'Liman',
+'Upper limb':'Liman','Lower limb':'Ain','Arm':'Liman','Leg':'Ain','Foot':'Ain-tanen','Trunk':'Isin','Back':'Kotuk','Chest':'Hirus-matan','Abdomen':'Kabun',
+'Scratch':'Kakehe','Lick':'Dila','Lick on broken skin':'Dila iha kulit kanek','Contact with saliva':'Kontaktu ho kabeen',
+'Provoked':'Ho provokasaun','Unprovoked':'La ho provokasaun',
+'Owned':"Iha na'in",'Stray':"Laiha na'in",'Community':'Komunidade','Community dog':'Asu komunidade','Wild':'Fuik',
+'Owned dog':"Asu iha na'in",'Stray dog':"Asu laiha na'in",
+'Alive':'Moris','Dead':'Mate','Died':'Mate','Killed':'Oho ona','Missing':'Lakon','Lost':'Lakon','Escaped':'Halai',
+'Healthy':'Saudavel','Sick':'Moras','Alive and healthy':'Moris no saudavel','Lost to follow-up':'Lakon segimentu',
+'Pig':'Fahi','Goat':'Bibi','Sheep':'Bibi-malae','Buffalo':'Karau-baka','Cow':'Karau','Horse':'Kuda','Rat':'Laho','Bat':'Niki','Human':'Ema',
+'Aggression':'Agresivu','Aggressive':'Agresivu','Paralysis':'Paralizia','Hypersalivation':'Kabeen barak',
+'Behaviour change':'Muda hahalok','Behavior change':'Muda hahalok','Abnormal behaviour':'Hahalok la normál','Normal':'Normál','None':'Laiha',
+'Pending':'Hein hela','Not tested':'La halo teste','Not done':'La halo','Inconclusive':'La konkluzivu','Not collected':'La foti',
+'Brain tissue':'Tesidu kakutak','Saliva':'Kabeen','Intramuscular (IM)':'Intramuskulár (IM)','Intradermal (ID)':'Intradérmiku (ID)',
+'Equine RIG':'RIG kuda (ERIG)','Human RIG':'RIG ema (HRIG)',
+'Recovered':'Di\'ak ona','Discharged':'Sai husi ospitál','Referred':'Referénsia','Hospitalized':'Baixa iha ospitál','Hospitalised':'Baixa iha ospitál',
+'Mild':'Kmaan','Moderate':'Médiu','Severe':'Grave','Fever':'Isin-manas','Hydrophobia':'Ta\'uk bee','Aerophobia':'Ta\'uk anin','Agitation':'Ajitasaun',
+'Morning':'Dadersan','Afternoon':'Lokraik','Evening':'Kalan','Night':'Kalan'
+});
+Object.assign(TT,{'Exposure place (location)':'Fatin akontesementu','Exposure place':'Fatin akontesementu','Exposure location':'Fatin akontesementu',
+'Bite / wound body site(s)':'Lokalizasaun kanek','Skin broken (scratch)':'Estragus iha kulit','Skin broken':'Estragus iha kulit',
+'Wound depth':'Kondisaun kanek','Rabies exposure category':'Kategoria kanek','Wound washed for >15 minutes':'Fase kanek >15 minutu'});
+const TTN={};Object.keys(TT).forEach(k=>TTN[k.trim().toLowerCase()]=TT[k]);
+const tt=s=>{if(s==null)return s;return TT[s]||TTN[String(s).trim().toLowerCase()]||s};
+/* ===== Theme & sidebar ===== */
+function theme(t){t=t||(document.documentElement.dataset.theme==='dark'?'light':'dark');document.documentElement.dataset.theme=t;try{localStorage.setItem('rb_theme',t)}catch(e){}const b=$('#thb');if(b)b.textContent=t==='dark'?'☀️':'🌙'}
+function mini(){document.body.classList.toggle('mini');try{localStorage.setItem('rb_mini',document.body.classList.contains('mini')?'1':'')}catch(e){}}
+(()=>{let t='light',m='';try{t=localStorage.getItem('rb_theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');m=localStorage.getItem('rb_mini')||''}catch(e){}theme(t);if(m)document.body.classList.add('mini')})();
+
+const MUN='Municipality / region of residence',POSTN='Administrative post of residence',AGE='Age (completed years)',AGG='Age group (years)',DOB='Date of birth',SSK='Health Facility (SSK)',RD='Registration date';
+/* Nivel uzuáriu: Host (hotu) · Administradór (munisípiu, la iha Jestaun konta) · Focal Point (nia SSK / postu de'it) */
+const isHost=()=>!!U&&U.level==='Host',isFP=()=>!!U&&U.level==='Post administrative'&&U.lock!==false,sskList=p=>isFP()&&U.ssk?[U.ssk]:ssksOf(U.mun,p),lockPost=()=>isFP()&&!U.ssk,areaLbl=()=>isHost()?'Asesu hotu':isFP()?(U.ssk||U.post):U.mun;
+let T,U,META,DATA,GEO=[],CUR='overview',FIL={},EDIT=null,REC=[],CURPOST='';
+const HPK='Health Post',hpsOf=(m,p,f)=>[...new Set(GEO.filter(g=>g.m===m&&g.s&&(!p||g.p===p)&&(!f||g.f===f)).map(g=>g.s))];
+const postsOf=m=>[...new Set(GEO.filter(g=>g.m===m).map(g=>g.p))],ssksOf=(m,p)=>[...new Set(GEO.filter(g=>g.m===m&&g.f&&(!p||g.p===p)).map(g=>g.f))];
+const ssOpts=(p,cur,legacy)=>{const o=p?(postsOf(U.mun).includes(p)?ssksOf(U.mun,p):ssksOf(U.mun)):[];if(legacy&&cur&&!o.includes(cur))o.push(cur);return `<option value="">${p?'—':'Hili postu uluk'}</option>`+o.map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join('')};
+function cascade(){formLoc(1)}
+const call=(fn,...a)=>new Promise((ok,no)=>google.script.run.withSuccessHandler(ok).withFailureHandler(no)[fn](...a));
+async function api(fn,...a){try{return await call(fn,T,...a)}catch(e){if(/SESSION/.test(e.message||e)){toast('Sesaun remata ona. Favór tama fali.',1);logout(1)}else toast(e.message||String(e),1);throw e}}
+function toast(m,e){const t=$('#toast');t.textContent=m;t.className=e?'e':'';t.hidden=false;clearTimeout(t._t);t._t=setTimeout(()=>t.hidden=true,3500)}
+function ask(msg){return new Promise(ok=>{const d=document.createElement('div');d.className='md';d.innerHTML=`<div><p>${esc(msg)}</p><button class="g">Kansela</button> <button class="d">Konfirma</button></div>`;const b=d.querySelectorAll('button');b[0].onclick=()=>{d.remove();ok(0)};b[1].onclick=()=>{d.remove();ok(1)};document.body.append(d)})}
+function atab(n){$('#fl').hidden=n!=1;$('#fr').hidden=n!=2;$('#t1').className=n==1?'on':'';$('#t2').className=n==2?'on':''}
+call('getGeo').then(g=>{GEO=g;const m=[...new Set(g.map(x=>x.m))].filter(x=>!/^fora/i.test(String(x).trim()));$('#rm').innerHTML=m.map(x=>`<option>${esc(x)}</option>`).join('');rsync()});
+function rsync(){const a=$('#rl').value==='Municipality';$('#rpw').hidden=a;$('#rsw').hidden=a;$('#rpo').innerHTML=postsOf($('#rm').value).map(x=>`<option>${esc(x)}</option>`).join('');rsk()}
+function rsk(){$('#rss').innerHTML='<option value="">— (postu tomak)</option>'+ssksOf($('#rm').value,$('#rpo').value).map(x=>`<option>${esc(x)}</option>`).join('')}
+/* ===== Dadus husi planilla: lee foun bainhira refresh ===== */
+const LB=(k,t)=>{if(k===SSK)return 'Hospital/SSK/Klinika Privada';const f=META&&META.fields&&META.fields.find(x=>x.name===k);return f&&f.label?f.label:t};
+/* Label kampu ne'ebé troka iha dashboard (planilla la muda) */
+const LBX={'Sex':'Sexu'};function fixMeta(m){(m&&m.fields||[]).forEach(f=>{if(LBX[f.name])f.label=LBX[f.name]});return m}
+async function refreshMeta(){try{const m=await api('getMeta');META=fixMeta(m);GEO=m.geo}catch(e){}}
+async function refreshAll(){await refreshMeta();DATA=null;go(CUR)}
+/* ===== Sinkronizasaun automátiku: dashboard lee foun dadus husi planilla kada minutu 1 (no bainhira fila ba tab ne'e) ===== */
+const DVIEWS=['overview','demo','expo','animal','pep','time','map'];let SYNCBUSY=false;
+const sig=a=>{const s=JSON.stringify(a);let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return h+':'+s.length};
+async function syncNow(){if(!T||SYNCBUSY||document.hidden||!DVIEWS.includes(CUR)||!DATA)return;const ae=document.activeElement;if(ae&&ae.tagName==='SELECT')return;
+SYNCBUSY=true;const v=CUR;try{const nd=await call('getDashboard',T);if(v===CUR&&DATA&&sig(nd)!==sig(DATA)){DATA=nd;const y=window.scrollY;dash(CUR);window.scrollTo(0,y);toast('Dadus foun husi planilla.')}}catch(e){}finally{SYNCBUSY=false}}
+setInterval(syncNow,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncNow()});
+async function doLogin(){$('#le').textContent='';try{const r=await call('login',$('#li').value,$('#lp').value);if(!r.ok){$('#le').textContent=r.error;return}
+T=r.token;U=r.user;META=fixMeta(await api('getMeta'));GEO=META.geo;DATA=null;FIL={year:YR,mun:isFP()?'in':'',post:lockPost()?U.post:'',ssk:'',hp:'',week:''};$('#auth').hidden=true;$('#app').hidden=false;$('#lp').value='';
+$('#mn').textContent=U.id;$('#ml').textContent=tt(U.level)+' · '+areaLbl();buildNav();go('overview')}catch(e){$('#le').textContent='Erru koneksaun. Koko fali.'}}
+async function doReg(){$('#re2').textContent='';const r=await call('register',{id:$('#ri').value,email:$('#re').value,password:$('#rp').value,level:$('#rl').value,mun:$('#rm').value,post:$('#rpo').value,ssk:$('#rss').value});
+if(r.ok){atab(1);$('#le').style.color='#0d9488';$('#le').textContent=r.message}else $('#re2').textContent=r.error}
+function logout(q){if(T&&!q)call('logout',T);T=U=META=DATA=null;$('#app').hidden=true;$('#auth').hidden=false;$('#le').style.color='';$('#le').textContent=''}
+const VIEWS={overview:['📊','Rezumu jerál'],demo:['👥','Ema no fatin'],expo:['🩹','Espozisaun'],animal:['🐕','Animál'],pep:['💉','PEP no RIG'],time:['⏱️','Pontualidade'],map:['🗺️','Mapa'],input:['📝','Priense dadus'],manage:['🗂️','Jestaun dadus'],accounts:['🔑','Jestaun konta']};
+
+VIEWS.msg=['💬','Kaixa Mensajen'];VIEWS.pw=['🔒','Troka liafuan-pase'];
+/* ===== KAIXA MENSAJEN ===== */
+let MSG=null,MSGSEL='__all',MSGT=null;
+setInterval(()=>{if(T&&CUR!=='msg'&&!document.hidden)msgBadge()},60000);
+async function msgs(){clearInterval(MSGT);MSGSEL='__all';await msgLoad(true);MSGT=setInterval(()=>{if(CUR==='msg'&&!document.hidden)msgLoad(false)},20000)}
+async function msgLoad(full){let r;try{r=await api('listMessages')}catch(e){return}MSG=r;if(full||!$('#chat'))msgRender();else{msgThreads();msgList()}msgSeen();msgBadge()}
+function msgView(){if(!MSG.admin||MSGSEL==='__all')return MSG.msgs;if(MSGSEL==='__bc')return MSG.msgs.filter(m=>m.to==='ALL');return MSG.msgs.filter(m=>m.from===MSGSEL||m.to.split(',').includes(MSGSEL))}
+const toLbl=m=>m.to==='ALL'?'Ema hotu':m.to==='ADMIN'?'Admin':m.to.split(',').join(', ');
+const fmtT=s=>{const d=new Date(s);if(isNaN(d))return s;const p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())};
+function msgRender(){const A=MSG.admin;$('#view').innerHTML=`<div id="chat" class="chat ${A?'adm':''}">${A?'<div class="clist" id="clist"></div>':''}<section class="cmain"><div class="chead" id="chead"></div><div class="msgs" id="msgs"></div><div class="comp" id="comp"></div></section></div>`;msgThreads();msgList();msgComp()}
+function msgThreads(){if(!MSG.admin||!$('#clist'))return;const un=id=>MSG.msgs.filter(m=>m.unread&&m.from===id).length,all=MSG.msgs.filter(m=>m.unread).length;
+const it=(k,ic,l,n,sub)=>`<a class="${MSGSEL===k?'on':''}" onclick="msgSel('${esc(k)}')"><span class="ci">${ic}</span><span class="tl"><b>${esc(l)}</b>${sub?`<small>${esc(sub)}</small>`:''}</span>${n?`<i class="mbd">${n}</i>`:''}</a>`;
+$('#clist').innerHTML='<h6>Kanál</h6>'+it('__all','📥','Mensajen hotu',all)+it('__bc','📢','Anúnsiu ba ema hotu',0)+'<h6>Uzuáriu</h6>'+MSG.users.filter(x=>x.id!==MSG.me).map(x=>it(x.id,x.level==='Host'?'👑':x.level==='Municipality'?'🛡️':'👤',x.id,un(x.id),x.level==='Host'?'Host':x.level==='Municipality'?'Administradór':(x.post||'Focal Point'))).join('')}
+function msgSel(k){MSGSEL=k;msgThreads();const b=$('#msgs');if(b)b.dataset.init='';msgList();msgComp();msgSeen()}
+function msgList(){const L=msgView(),h=$('#chead'),box=$('#msgs');if(!box)return;const atB=box.scrollHeight-box.scrollTop-box.clientHeight<80;
+h.innerHTML=MSG.admin?(MSGSEL==='__all'?'📥 Mensajen hotu':MSGSEL==='__bc'?'📢 Anúnsiu ba ema hotu':'👤 Konversa privadu ho <b>'+esc(MSGSEL)+'</b>'):'💬 Konversa ho Admin Munisípiu';
+box.innerHTML=L.length?L.map(m=>`<div class="bub ${m.mine?'me':''} ${m.unread?'new':''}"><div class="bm"><b>${m.mine?"Ha'u":esc(m.from)}</b> → ${esc(toLbl(m))} · ${fmtT(m.at)}</div><div class="bt">${esc(m.text).replace(/\n/g,'<br>')}</div></div>`).join(''):'<p class="mut" style="text-align:center;margin:40px 0">Seidauk iha mensajen.</p>';
+if(atB||!box.dataset.init){box.scrollTop=box.scrollHeight;box.dataset.init=1}}
+function msgComp(){const c=$('#comp');if(!c)return;const keep=(c.querySelector('textarea')||{}).value||'';let pick='';
+if(MSG.admin&&MSGSEL==='__all')pick=`<details class="rcp"><summary id="rcps">Ba: Ema hotu</summary><div><label><input type="checkbox" value="ALL" checked onchange="rcpAll(this)"> 📢 Ema hotu (anúnsiu)</label>${MSG.users.filter(x=>x.id!==MSG.me).map(x=>`<label><input type="checkbox" class="ru" value="${esc(x.id)}" onchange="rcpOne()"> ${esc(x.id)} <small class="mut">${esc(x.level==='Host'?'Host':x.level==='Municipality'?'Admin':(x.post||''))}</small></label>`).join('')}</div></details>`;
+const ph=!MSG.admin?'Hakerek mensajen ba Admin…':MSGSEL==='__all'?'Hakerek mensajen… (hili ema simu iha leten)':MSGSEL==='__bc'?'Hakerek anúnsiu ba ema hotu…':'Hakerek resposta privadu ba '+MSGSEL+'…';
+c.innerHTML=`${pick}<div class="crow"><textarea id="mtx" rows="2" maxlength="2000" placeholder="${esc(ph)}" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))msgSend()"></textarea><button onclick="msgSend()">➤ Haruka</button></div><small class="mut">Ctrl/⌘ + Enter atu haruka</small>`;$('#mtx').value=keep}
+function rcpAll(cb){if(cb.checked)document.querySelectorAll('#comp .ru').forEach(x=>x.checked=false);rcpLbl()}
+function rcpOne(){const any=[...document.querySelectorAll('#comp .ru')].some(x=>x.checked);document.querySelector('#comp input[value="ALL"]').checked=!any;rcpLbl()}
+function rcpLbl(){const s=[...document.querySelectorAll('#comp .ru:checked')].map(x=>x.value);$('#rcps').textContent='Ba: '+(s.length?s.join(', '):'Ema hotu')}
+async function msgSend(){const t=$('#mtx').value.trim();if(!t)return;let to='ADMIN';if(MSG.admin){if(MSGSEL==='__bc')to='ALL';else if(MSGSEL==='__all'){const s=[...document.querySelectorAll('#comp .ru:checked')].map(x=>x.value);to=s.length?s:'ALL'}else to=[MSGSEL]}
+const b=document.querySelector('#comp button');b.disabled=true;try{const r=await api('sendMessage',{to,text:t});if(!r.ok){toast(r.error,1);return}$('#mtx').value='';toast('Mensajen haruka ona.');await msgLoad(false);const box=$('#msgs');if(box)box.scrollTop=box.scrollHeight}catch(e){}finally{b.disabled=false}}
+async function msgSeen(){if(!MSG)return;const ids=msgView().filter(m=>m.unread).map(m=>m.id);if(!ids.length)return;try{await api('markRead',ids);MSG.msgs.forEach(m=>{if(ids.includes(m.id))m.unread=false});msgThreads();msgBadge(MSG.msgs.filter(m=>m.unread).length)}catch(e){}}
+async function msgBadge(n){if(n===undefined){if(MSG&&CUR==='msg')n=MSG.msgs.filter(m=>m.unread).length;else{try{n=await api('unreadCount')}catch(e){return}}}const a=$('#n_msg');if(!a)return;let b=a.querySelector('.mbd');if(!b){b=document.createElement('i');b.className='mbd';a.append(b)}b.textContent=n;b.hidden=!n}
+function buildNav(){const g=(h,k)=>`<h6>${h}</h6>`+k.map(x=>`<a id="n_${x}" title="${VIEWS[x][1]}" onclick="go('${x}')"><span class="ic">${VIEWS[x][0]}</span><span class="tx"> ${VIEWS[x][1]}</span></a>`).join('');
+$('#nav').innerHTML=g('DASHBOARD',['overview','demo','expo','animal','pep','time','map'])+g('REJISTU',['input','manage'])+(isHost()?g('ADMINISTRASAUN',['accounts'])+(META&&META.ssUrl?`<a href="${esc(META.ssUrl)}" target="_blank" rel="noopener" title="Loke planilla dadus"><span class="ic">📄</span><span class="tx"> Loke planilla</span></a>`:''):'')+(isFP()?'':g('KONTA',['pw']))+g('KOMUNIKASAUN',['msg']);setTimeout(()=>msgBadge(),1200)}
+/* ===== Download PDF ba Rezumu jerál, Ema no fatin, Espozisaun, Animál, PEP no RIG, Pontualidade no Mapa ===== */
+const PDFV=['overview','demo','expo','animal','pep','time','map'];
+const PDFCSS=`*,*::before,*::after{animation:none!important;transition:none!important}.kpi::after{content:none!important;display:none!important;width:0!important;height:0!important}#ti,.top h2 #ti,.brand b{background:none!important;-webkit-text-fill-color:currentColor!important;color:var(--p)!important}[data-theme="dark"] #ti{color:#FFC726!important}.top{position:static!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}.wv-svg .wl{stroke-dasharray:none!important}html,body,#app,main{background:#fff!important;background-image:none!important}.top,#view>.fb,#view>.fb:first-child,.card,.kpi,details.sec,details.sec summary,.tw,table{background:#fff!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}.card,.kpi,#view>.fb:first-child{border:1px solid #d6e6d8!important}th{background:#f3f7f3!important}.kpi::before{display:none!important}`;
+const ldJS=u=>new Promise((ok,no)=>{if(document.querySelector(`script[src="${u}"]`))return ok();const t=document.createElement('script');t.src=u;t.onload=ok;t.onerror=no;document.head.append(t)});
+const munLbl=()=>FIL.mun==='in'?U.mun:FIL.mun==='out'?'Fora husi Munisípiu':'hotu';
+async function dlPDF(){const btn=$('#pdfb'),old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Prepara…';
+try{await ldJS('https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.11/dist/html2canvas-pro.min.js');await ldJS('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+const lst=document.createElement('style');lst.id='pdfcss';lst.textContent=PDFCSS;document.head.append(lst);await new Promise(r=>setTimeout(r,60));
+const src=$('main'),bg='#ffffff';const SNAP=CUR==='map'?mapSnap():null;
+/* Blok (kartaun, KPI, filtru, header) ne'ebé labele koa: pozisaun sukat iha dokumentu klone */
+let BR=[],MH=0;
+const cv=await html2canvas(src,{scale:2,useCORS:true,backgroundColor:bg,windowWidth:Math.max(1440,src.scrollWidth),
+ onclone:d=>{if(SNAP){const m=d.getElementById('map');if(m){m.innerHTML='';m.className='';const im=d.createElement('img');im.src=SNAP;im.style.cssText='width:100%;height:100%;display:block;border-radius:12px';m.append(im)}}const st=d.createElement('style');st.textContent=PDFCSS;d.head.append(st);
+  try{const m=d.querySelector('main'),mr=m.getBoundingClientRect();MH=mr.height;BR=[...m.querySelectorAll('.top,.fb,.kpi,.card,details.sec')].map(e=>{const r=e.getBoundingClientRect();return [r.top-mr.top,r.bottom-mr.top]}).filter(r=>r[1]>r[0])}catch(err){BR=[]}},
+ ignoreElements:e=>e.id==='pdfb'||e.id==='thb'||(e.tagName==='BUTTON'&&/Atualiza/.test(e.textContent))||e.id==='toast'});
+const {jsPDF}=window.jspdf,pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'}),W=210,H=297,M=8,cw=W-2*M,ch=H-2*M-6;
+const pxPerMm=cv.width/cw,sliceH=Math.floor(ch*pxPerMm),k=MH?cv.height/MH:1;let y=0,pg=0;
+/* Fim pájina: se kartaun ida koa iha fim pájina, kartaun ne'e muda ba pájina tuir mai */
+const cut=y0=>{let end=Math.min(cv.height,y0+sliceH);if(end>=cv.height)return end;let ch2=true,g=0;while(ch2&&g++<60){ch2=false;for(const [a,b] of BR){const A=Math.floor(a*k)-10,B=Math.ceil(b*k);if(A>y0+30&&A<end&&B>end){end=A;ch2=true}}}return end-y0<sliceH*0.25?Math.min(cv.height,y0+sliceH):end};
+const ft=`${VIEWS[CUR][1]} · Tinan: ${FIL.year||'hotu'} · Munisípiu: ${munLbl()} · Postu: ${spLbl(FIL.post)||'hotu'} · SSK: ${spLbl(FIL.ssk)||'hotu'} · Postu Saúde: ${spLbl(FIL.hp)||'hotu'} · Semana: ${FIL.week||'hotu'} · ${dmy(today())}`;
+while(y<cv.height){const h=cut(y)-y,c=document.createElement('canvas');c.width=cv.width;c.height=h;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,c.width,h);x.drawImage(cv,0,y,cv.width,h,0,0,cv.width,h);
+ if(pg)pdf.addPage();pdf.addImage(c.toDataURL('image/jpeg',.92),'JPEG',M,M,cw,h/pxPerMm);pdf.setFontSize(7);pdf.setTextColor(120);pdf.text(ft,M,H-4);pdf.text(`${pg+1}`,W-M,H-4,{align:'right'});y+=h;pg++}
+const nm=('Raiva_'+VIEWS[CUR][1].normalize('NFD').replace(/[\u0300-\u036f]/g,'')+'_'+(FIL.year||'hotu')+(FIL.mun?'_'+(FIL.mun==='in'?U.mun:'Fora'):'')+(FIL.post?'_'+spLbl(FIL.post):'')+(FIL.week?'_S'+String(FIL.week).padStart(2,'0'):'')+'_'+today()).replace(/[^\w\-]+/g,'_')+'.pdf';
+pdf.save(nm);toast&&toast('PDF prontu: '+nm)}
+catch(e){console.log(e);toast&&toast('La konsege kria PDF direta — uza "Save as PDF" iha janela imprime.');setTimeout(()=>window.print(),300)}
+finally{const x=$('#pdfcss');if(x)x.remove();btn.disabled=false;btn.textContent=old}}
+async function go(v,keep){CUR=v;if(v!=='msg')clearInterval(MSGT);if(!keep)EDIT=null;document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.id==='n_'+v));$('#ti').textContent=VIEWS[v][1];$('#pdfb').hidden=!PDFV.includes(v);
+const el=$('#view');el.innerHTML='<div class="ld"><span></span>Karrega hela…</div>';try{if(['overview','demo','expo','animal','pep','time','map'].includes(v)){if(!DATA)DATA=await api('getDashboard');dash(v)}else if(v==='input'){if(!keep)await refreshMeta();form()}else if(v==='manage')manage();else if(v==='msg')msgs();else if(v==='pw'&&!isFP())pwView();else if(isHost())accts();else go('overview')}catch(e){}}
+const YR=String(new Date().getFullYear()),EXP='Exposure date (animal bite)',D0='PEP day 0: date given',D3='PEP day 3: date given',D7='PEP day 7: date given',D4='PEP dose 4 (day 14-28): date given',VST='Vaccine dose status',ADM='Admission date',SON='Symptom onset date',DTH='Death date',LAT='Exposure latitude (decimal degrees)',LON='Exposure longitude (decimal degrees)',CATG='Rabies exposure category',PEPK='PEP course completed';
+const PAL=['#14b8a6','#0e5f73','#fb8a6e','#5eead4','#f59e0b','#0f766e','#94a3b8','#22d3ee'];let MAP;
+const nz=s=>String(s==null?'':s).trim().toLowerCase().replace(/\s+/g,' ');
+/* Filtru: Tinan · Munisípiu (in = Baucau / out = Fora husi Munisípiu) · Postu · SSK · Postu Saúde · Semana
+   Kazu Fora husi Munisípiu: filtru Postu tuir postu husi SSK / Postu Saúde ne'ebé trata kazu */
+const inPost=(r,p)=>ssksOf(U.mun,p).some(f=>nz(f)===nz(r[SSK]))||hpsOf(U.mun,p).some(s=>nz(s)===nz(r[HPK]));
+/* Opsaun espesiál iha filtru Postu / SSK / Postu Saúde: Viqueque, Lospalos, Seluk */
+/* Opsaun 'Fora husi Munisípiu' iha filtru Postu / SSK / Postu Saúde: lee husi sheet 'option' (kolun Postu administrativu)
+   — naran hotu ne'ebé la'ós postu Baucau (ex. Viqueque, Lautem, Dili) + 'Seluk' iha ikus */
+const OUTDEF=['Viqueque','Lautem','Dili'],RXLP=/lospalos|laut[eé]m/i;
+const kz=v=>nz(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const isBP=v=>{const a=kz(v);return !!a&&postsOf(U.mun).some(p=>{const b=kz(p);if(a===b)return true;let i=0;while(i<a.length&&i<b.length&&a[i]===b[i])i++;return i>=5})};
+/* Postu 'Fora husi Munisípiu': husi sheet 'informasaun jeografia' (liña ho Munisípiu la'ós munisípiu uzuáriu), depois lista opsaun */
+function outPosts(){const L=[],add=v=>{v=String(v||'').trim();if(!v||/^seluk$/i.test(v)||isBP(v)||L.some(x=>nz(x)===nz(v)))return;L.push(v)};
+GEO.filter(g=>nz(g.m)!==nz(U.mun)).forEach(g=>add(g.p));const f=((META&&META.fields)||[]).find(x=>x.name===POSTN);(f&&f.options||[]).forEach(add);if(!L.length)OUTDEF.forEach(add);return L}
+const outNames=()=>outPosts().concat('Seluk');
+/* Lista SSK / Postu Saúde 'Fora husi Munisípiu' (k='f' SSK, k='s' Postu Saúde), tuir postu ne'ebé hili */
+function outGeo(k,p,f){const L=[...new Set(GEO.filter(g=>nz(g.m)!==nz(U.mun)&&(!p||nz(g.p)===nz(p))&&(k==='f'||!f||nz(g.f)===nz(f))).map(g=>String(g[k]||'').trim()).filter(Boolean))];return L.length?L:(p?[p]:outNames())}
+const munOut=()=>{const f=((META&&META.fields)||[]).find(x=>x.name===MUN);return (f&&f.options||[]).concat(GEO.map(g=>g.m)).find(x=>x&&nz(x)!==nz(U.mun))||'Fora husi Munisípiu'};
+/* Opsaun filtru 'Fora husi Munisípiu' ho kódigu espesiál (__out:Naran / __SL = Seluk) */
+const spKey=n=>/^seluk$/i.test(String(n).trim())?'__SL':'__out:'+n;
+const outOpts=(L,x)=>L.map(spKey).filter((k,i,a)=>a.indexOf(k)===i).map(k=>`<option value="${esc(k)}" ${x===k?'selected':''}>${esc(spLbl(k))}</option>`).join('');
+const isSp=v=>v==='__SL'||String(v||'').indexOf('__out:')===0,spLbl=v=>v==='__SL'?'Seluk':isSp(v)?String(v).slice(6):v;
+const spOpts=x=>`<optgroup label="Fora husi Munisípiu">${outPosts().map(n=>'__out:'+n).concat('__SL').map(k=>`<option value="${esc(k)}" ${x===k?'selected':''}>${esc(spLbl(k))}</option>`).join('')}</optgroup>`;
+const outRx=n=>RXLP.test(n)?RXLP:new RegExp('(^|[^a-z])'+nz(n).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z]|$)','i');
+function spMatch(r,k,val,list){const out=r.munCat==='out',txt=nz([val,out?r[MUN]:'',out?r[POSTN]:''].join(' '));
+if(k!=='__SL')return outRx(spLbl(k)).test(txt);
+return !outPosts().some(n=>outRx(n).test(txt))&&(out||(!!String(val||'').trim()&&!list.some(x=>nz(x)===nz(val))))}
+const pMatch=r=>!FIL.post||(isFP()&&!!U.ssk)||(isSp(FIL.post)?spMatch(r,FIL.post,r[POSTN],postsOf(U.mun)):(r.munCat==='out'?inPost(r,FIL.post):nz(r[POSTN])===nz(FIL.post)));
+const sMatch=r=>!FIL.ssk||(isSp(FIL.ssk)?spMatch(r,FIL.ssk,r[SSK],ssksOf(U.mun)):nz(r[SSK])===nz(FIL.ssk));
+const hMatch=r=>!FIL.hp||(isSp(FIL.hp)?spMatch(r,FIL.hp,r[HPK],hpsOf(U.mun)):nz(r[HPK])===nz(FIL.hp));
+const filt=()=>DATA.filter(r=>(!FIL.year||String(r['Reporting year'])===FIL.year)&&(isFP()?true:(!FIL.mun||r.munCat===FIL.mun))&&pMatch(r)&&sMatch(r)&&hMatch(r)&&(!FIL.week||parseInt(r['Reporting week'])===parseInt(FIL.week)));
+/* Nivel kategoria espozisaun (1/2/3) husi valór hotu: Grade 3, Grau 3, Kategoria III, Category III, III, 3 */
+/* ===== KPI: PEP kompletu (husi data dóze PEP) no Simu RIG (husi Detalle RIG) ===== */
+/* Dóze PEP: 1 (loron 0), 2 (loron 3), 3 (loron 7), 4 (loron 14-28) */
+/* Kazu elejível ba PEP: Planu rejime PEP iha valór (IM / ID / Sim), la'ós 'Lae' / 'Nao' */
+const rigY=r=>/^(yes|sim)$/i.test(String(r['Rabies immunoglobulin received']||'').trim());
+const planY=r=>{const v=String(r['Planned PEP regimen']||'').trim();return !!v&&!/^(no|lae|nao|não)$/i.test(v)};
+const dTop=r=>r[D4]?4:r[D7]?3:r[D3]?2:r[D0]?1:0,dMax=dTop;
+const pepDone=r=>{const g=String(r['PEP regimen used']||r['Planned PEP regimen']||''),m=dMax(r);return /booster/i.test(g)?m>=2:/ipc|\bid\b|intrad/i.test(g)?m>=3:m>=4};
+const rigOk=r=>rigY(r)||!!(r['RIG date received']||r['RIG dose (IU)']||r['RIG volume (ml)']||r['Immunoglobulin name/code (brand)']);
+const catLv=v=>{const t=String(v||'').trim().toUpperCase().replace(/^(GRADE|GRAU|KATEGORI[AU]?|CATEGOR(Y|IA)|CAT\.?)\s*/,'');return t==='III'||t==='3'?3:t==='II'||t==='2'?2:t==='I'||t==='1'?1:0};
+const cnt=(rows,k)=>{const m={};rows.forEach(r=>{const v=r[k]||'(blank)';m[v]=(m[v]||0)+1});return Object.entries(m)};
+const ord=(e,o)=>o.filter(k=>e.some(x=>x[0]===k)).map(k=>e.find(x=>x[0]===k)).concat(e.filter(x=>!o.includes(x[0])));
+const dd=s=>s?Date.parse(s):NaN,gap=(a,b)=>{const x=(dd(b)-dd(a))/864e5;return isNaN(x)||x<0?null:Math.round(x)};
+const med=a=>{a=a.slice().sort((x,y)=>x-y);return a.length%2?a[a.length>>1]:(a[a.length/2-1]+a[a.length/2])/2};
+const none='<p class="mut">Laiha dadus</p>';
+function bars(t,e,o={}){if(!o.keep)e=e.sort((a,b)=>b[1]-a[1]);if(o.top)e=e.slice(0,o.top);const mx=Math.max(1,...e.map(x=>x[1]));
+return `<div class="card"><h4>${t}</h4>${e.length?e.map(([k,v])=>`<div class="br"><span>${esc(tt(k))}</span><div><i style="width:${v/mx*100}%"></i></div><b>${v} <small>${Math.round(v/o.tot*100)}%</small></b></div>`).join(''):none}</div>`}
+function pie(t,e){let SM=0;e=e.sort((a,b)=>b[1]-a[1]);const tot=e.reduce((s,x)=>s+x[1],0);if(!tot)return `<div class="card"><h4>${t}</h4>${none}</div>`;
+let a=-Math.PI/2,s='';const P=(r,x)=>[(100+r*Math.cos(x)).toFixed(1),(100+r*Math.sin(x)).toFixed(1)];
+e.forEach(([k,v],i)=>{const f=v/tot,b=a+f*2*Math.PI,c=PAL[i%8];
+if(f>.9999)s+=`<circle cx="100" cy="100" r="66" fill="none" stroke="${c}" stroke-width="38"><title>${esc(tt(k))}: ${v}</title></circle>`;
+else{const[x0,y0]=P(85,a),[x1,y1]=P(85,b),[x2,y2]=P(47,b),[x3,y3]=P(47,a),l=f>.5?1:0;s+=`<path d="M${x0} ${y0}A85 85 0 ${l} 1 ${x1} ${y1}L${x2} ${y2}A47 47 0 ${l} 0 ${x3} ${y3}Z" fill="${c}" style="stroke:var(--card)" stroke-width="2"><title>${esc(tt(k))}: ${v}</title></path>`}
+if(f>=.06){const[tx,ty]=P(66,(a+b)/2);s+=`<text x="${tx}" y="${ty}" fill="#fff" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="middle">${v}</text>`}else if(v>0){SM++;const m=(a+b)/2,R2=SM%2?102:116,[lx,ly]=P(R2,m),[ex,ey]=P(87,m);s+=`<line x1="${ex}" y1="${ey}" x2="${lx}" y2="${ly}" style="stroke:var(--mut)" stroke-width="1"/><text x="${lx}" y="${ly}" font-size="11" font-weight="800" text-anchor="${Math.cos(m)>=0?'start':'end'}" dominant-baseline="middle" style="fill:var(--tx);paint-order:stroke;stroke:var(--card);stroke-width:3px">${v}</text>`}a=b});
+return `<div class="card"><h4>${t}</h4><div class="pc"><svg width="210" height="210" viewBox="-28 -28 256 256" style="overflow:visible">${s}<text x="100" y="97" text-anchor="middle" font-size="24" font-weight="800" style="fill:var(--tx)">${tot}</text><text x="100" y="116" text-anchor="middle" font-size="10" style="fill:var(--mut)">total</text></svg>
+<div>${e.map(([k,v],i)=>`<div class="lg"><i style="background:${PAL[i%8]}"></i>${esc(tt(k))} <b>${v}</b> <small>${Math.round(v/tot*100)}%</small></div>`).join('')}</div></div></div>`}
+function colc(t,e,o={}){if(!o.keep)e=e.sort((a,b)=>b[1]-a[1]);const mx=Math.max(1,...e.map(x=>x[1])),den=o.den||o.tot||e.reduce((s,x)=>s+x[1],0)||1;
+return `<div class="card"><div class="ch"><h4>${t}</h4>${o.head||''}</div>${e.length?`<div class="cols ${o.cls||'w'}" style="height:220px">${e.map(([k,v],i)=>`<div class="col" title="${esc(tt(k))}: ${v}"><em>${o.hide0&&!v?'&nbsp;':v}${o.pct?`<br><small>${Math.round(v/den*100)}%</small>`:''}</em><i style="height:${v/mx*70}%${o.hl&&v===mx&&v?';background:linear-gradient(0deg,#c2412d,#fb8a6e)!important':''}"></i><span>${esc(tt(k))}</span></div>`).join('')}</div>`:none}</div>`}
+let TR='exp';
+const wy=s=>{const q=s.split('-').map(Number),t=Date.UTC(q[0],q[1]-1,q[2]),j=Date.UTC(q[0],0,1);return[q[0],Math.floor((Math.round((t-j)/864e5)+new Date(j).getUTCDay())/7)+1]},lastW=y=>wy(y+'-12-31')[1],wl=k=>String(Math.floor(k/100)).slice(2)+'-S'+String(k%100).padStart(2,'0');
+function trend(R){const m={};let skip=0;R.forEach(r=>{let y,w;if(TR==='exp'){if(!/^\d{4}-\d{2}-\d{2}$/.test(r[EXP])){skip++;return}[y,w]=wy(r[EXP])}else{y=parseInt(r['Reporting year']);w=parseInt(r['Reporting week']);if(isNaN(y)||isNaN(w)){skip++;return}}m[y*100+w]=(m[y*100+w]||0)+1});
+const ks=Object.keys(m).map(Number),e=[];let early=0,y0=0;if(ks.length){y0=FIL.year?parseInt(FIL.year):Math.floor(Math.min(...ks)/100);const st=y0*100+1,end=Math.max(...ks);ks.forEach(k=>{if(k<st)early+=m[k]});let y=y0,w=1;while(y*100+w<=end){e.push([wl(y*100+w),m[y*100+w]||0]);if(w>=lastW(y)){y++;w=1}else w++}}
+const sel=`<select style="width:auto" onchange="TR=this.value;dash('overview')"><option value="exp" ${TR==='exp'?'selected':''}>Tuir data espozisaun</option><option value="rep" ${TR==='rep'?'selected':''}>Tuir semana relatóriu</option></select>`;
+return colc(TR==='exp'?'Kazu kada semana tuir data espozisaun':'Kazu kada semana tuir semana relatóriu',e,{keep:1,cls:'fit',hide0:1,step:Math.ceil(e.length/60)||1,head:sel,foot:'Semana hahú iha loron Domingu; semana 1 inklui loron 1 Janeiru.'+(skip?` Kazu ${skip} ne'ebé laiha data válidu la hatudu.`:'')+(early?` Kazu ${early} ho data molok semana 1 tinan ${y0} la hatudu.`:'')})}
+function fbar(){if(isFP())FIL.mun='in';const lockS=isFP()&&!!U.ssk;if(lockS&&FIL.post)FIL.post='';if(lockS&&FIL.ssk&&!isSp(FIL.ssk))FIL.ssk='';const yrs=[...new Set(DATA.map(r=>String(r['Reporting year'])).filter(Boolean).concat(YR))].sort().reverse(),M=FIL.mun,PU=lockPost(),lock=PU&&M!=='out',o=(l,x)=>l.map(i=>`<option ${x===i?'selected':''}>${esc(i)}</option>`).join('');
+/* Munisípiu = Baucau → de'it postu / SSK / Postu Saúde Baucau; Fora husi Munisípiu → de'it Viqueque, Lautem, Dili, Seluk; Munisípiu hotu → rua hotu */
+const pp=spLbl(FIL.post),sp=spLbl(FIL.ssk);let posts,sk,hp;
+if(M==='out'){posts=outOpts(outNames(),FIL.post);sk=outOpts(outGeo('f',isSp(FIL.post)?pp:''),FIL.ssk);hp=outOpts(outGeo('s',isSp(FIL.post)?pp:'',isSp(FIL.ssk)?sp:''),FIL.hp)}
+else{const bs=isSp(FIL.post)?[...new Set(DATA.filter(pMatch).map(r=>String(r[SSK]||'').trim()).filter(Boolean))].sort():sskList(FIL.post);
+posts=o(lock?[U.post]:postsOf(U.mun),FIL.post)+(M===''&&!lock?spOpts(FIL.post):'');sk=o(bs,FIL.ssk)+(M===''?spOpts(FIL.ssk):'');hp=o(hpList(),FIL.hp)+(M===''?spOpts(FIL.hp):'')}
+return `<div class="fb"><label>Tinan<select onchange="FIL.year=this.value;dash(CUR)"><option value="">Tinan hotu</option>${o(yrs,FIL.year)}</select></label>
+<label>Munisípiu${isFP()?`<select disabled title="Munisípiu ita-nia konta (xave)"><option value="in">🔒 ${esc(U.mun)}</option></select>`:`<select onchange="setMun(this.value)"><option value="">Munisípiu hotu</option><option value="in" ${M==='in'?'selected':''}>${esc(U.mun)}</option><option value="out" ${M==='out'?'selected':''}>Fora husi Munisípiu</option></select>`}</label>
+<label>Postu administrativu${lockS||lock?`<select disabled title="Postu ita-nia konta (xave)"><option value="">🔒 ${esc(U.post)}</option></select>`:`<select ${lock?'disabled':''} onchange="FIL.post=this.value;FIL.ssk='';FIL.hp='';dash(CUR)"><option value="">Postu hotu</option>${posts}</select>`}</label>
+<label>Hospital/SSK/Klinika Privada${lockS?`<select disabled title="Fasilidade ita-nia konta (xave)"><option value="">🔒 ${esc(U.ssk)}</option></select>`:`<select onchange="FIL.ssk=this.value;FIL.hp='';dash(CUR)"><option value="">Hotu</option>${sk}</select>`}</label>
+<label>Postu Saúde<select onchange="FIL.hp=this.value;dash(CUR)"><option value="">Hotu</option>${hp}</select></label>
+<label>Semana epidemiolójika<select onchange="FIL.week=this.value;dash(CUR)"><option value="">Semana hotu</option>${wkOpts()}</select></label></div>`}
+/* Troka Munisípiu → hamoos filtru Postu / SSK / Postu Saúde ne'ebé la pertense ba munisípiu ne'e */
+function setMun(v){FIL.mun=isFP()?'in':v;FIL.post=lockPost()&&v!=='out'?U.post:'';FIL.ssk='';FIL.hp='';dash(CUR)}
+function wkOpts(){const has={};DATA.forEach(r=>{if(!FIL.year||String(r['Reporting year'])===FIL.year){const w=parseInt(r['Reporting week']);if(!isNaN(w))has[w]=(has[w]||0)+1}});let h='';for(let w=1;w<=53;w++){h+=`<option value="${w}" ${String(w)===String(FIL.week)?'selected':''}>Semana ${String(w).padStart(2,'0')}${has[w]?' · kazu '+has[w]:''}</option>`}return h}
+function dash(v){const R=filt(),N=R.length,c=(k,x)=>R.filter(r=>r[k]===x).length,p=n=>N?Math.round(n/N*100)+'%':'–',G=x=>`<div class="grid">${x}</div>`,has=(r,k)=>!!r[k],
+/* Gráfiku liga ho kolun planilla: kolun la iha ona → gráfiku la hatudu; kolun mamuk → 'Laiha dadus' */
+HC=k=>!!DATA.length&&(k in DATA[0]),EM=k=>!R.some(r=>r[k]!==''&&r[k]!=null),W=(t,k,f)=>!HC(k)?'':EM(k)?`<div class="card"><h4>${esc(LB(k,t))}</h4>${none}</div>`:f(),
+B=(t,k,o={})=>W(t,k,()=>bars(LB(k,t),cnt(R,k),{tot:N,...o})),P=(t,k)=>W(t,k,()=>pie(LB(k,t),cnt(R,k))),C=(t,k,o={})=>W(t,k,()=>colc(LB(k,t),cnt(R,k),{tot:N,...o})),
+O=(t,k,L,o={})=>W(t,k,()=>colc(LB(k,t),ord(cnt(R,k),L),{keep:1,tot:N,pct:1,...o}));
+/* Top 10 (Suku / Aldeia): ortografia oioin hanesan ida (ex. 'Ana Ulo' = 'Anaulo', 'Uatu-Haco' = 'Uatuhaco'); naran ne'ebé uza barak liu mak hatudu; mamuk la konta */
+const cntM=k=>{const g={};R.forEach(r=>{const v=String(r[k]==null?'':r[k]).trim();if(!v)return;const key=kz(v).replace(/[\s\-'’.]/g,'');(g[key]=g[key]||{n:0,s:{}}).n++;g[key].s[v]=(g[key].s[v]||0)+1});return Object.values(g).map(x=>[Object.entries(x.s).sort((a,b)=>b[1]-a[1])[0][0],x.n])},
+TOP10=(t,k)=>W(t,k,()=>{const all=cntM(k),filled=all.reduce((s,x)=>s+x[1],0);return rank(t+' (10)',all,N,N-filled)});
+const dose=[['Dóze 1 (loron 0)',r=>has(r,D0)],['Dóze 2 (loron 3)',r=>has(r,D3)],['Dóze 3 (loron 7)',r=>has(r,D7)],['Dóze 4 (loron 14-28)',r=>has(r,D4)]].filter((d,i)=>HC([D0,D3,D7,D4][i]));
+let h=fbar(),pts=[];
+if(v==='overview'){
+/* Estatutu PEP: husi data dóze PEP (hanesan pájina PEP no RIG), % husi kazu elejível ba PEP */
+const pk=(()=>{const el=R.filter(r=>planY(r)||dTop(r)>0),M=el.length,b=[1,2,3,4].map(i=>el.filter(r=>dTop(r)===i).length),best=b.reduce((m,v,i)=>v>b[m]?i:m,0),n=b[best];return kpi('Estatutu PEP',n?`<span class="kpiw">Dóze ${best+1}</span>`:'–',n?n+' kazu · '+Math.round(n/M*100)+'% husi '+M+' elejível':'')})();
+h+=`<div class="kpis">${kpi('Total kazu',N)}${(()=>{/* Kategoria kanek predominadu: kategoria ho kazu barak liu (I / II / III) */const b=[1,2,3].map(l=>R.filter(r=>catLv(r[CATG])===l).length),i=b.reduce((m,v,j)=>v>b[m]?j:m,0),n=b[i];return kpi('Kategoria kanek predominadu',n?`<span class="kpiw">Kategoria ${['I','II','III'][i]}</span>`:'–',n?n+' kazu · '+p(n):'')})()}${(t=>kpi('Animál predominadu',t?`<span class="kpiw">${esc(tt(t[0]))}</span>`:'–',t?t[1]+' kazu · '+p(t[1]):''))(cnt(R.filter(r=>r['Animal species']),'Animal species').sort((x,y)=>y[1]-x[1])[0])}${pk}${(n=>kpi('Estatutu RIG',n,p(n)))(R.filter(rigOk).length)}${(n=>kpi('Animál pozitivu raiva',n,p(n)))(c('Animal laboratory result','Positive'))}</div>`+trend(R)+G(O('Kategoria espozisaun',CATG,['Grade 1','Grade 2','Grade 3'])+monthC(R)+pepC(R)+rig3C(R)+P('Rezultadu laboratóriu animál','Animal laboratory result'))}
+if(v==='demo'){const a=R.map(r=>parseFloat(r[AGE])).filter(x=>!isNaN(x));h+=`<div class="kpis">${kpi('Kazu',N)}${kpi('Idade mediana',a.length?med(a):'–')}${(t=>kpi('Idade predominadu',t?`<span class="kpiw">${esc(t[0])}</span>`:'–',t?t[1]+' kazu · '+p(t[1]):''))(cnt(R.filter(r=>r.ageGroup),'ageGroup').sort((x,y)=>y[1]-x[1])[0])}</div>`+G(W('Sexu','Sex',()=>sexC(R))+colc('Grupu idade',ord(cnt(R,'ageGroup'),['0 - 4','5 - 14','15 - 49','50 - 64','> 65']),{keep:1,tot:N,pct:1,hl:1,foot:'Kór koral = grupu idade ho kazu barak liu.'})+(isFP()?'':TOP10('Postu administrativu',POSTN)+TOP10('Hospital/SSK/Klinika Privada',SSK))+TOP10('Postu da Saúde','Health Post')+TOP10('Suku','Suco of residence')+TOP10('Aldeia','Aldeia of residence')+mWave('Kazu kada fulan tuir sexu',R,[{name:'Mane',c:'#22d3ee',f:r=>r.Sex==='Male'},{name:'Feto',c:'#fb8a6e',f:r=>r.Sex==='Female'}],{cls:'w2',all:1}))}
+if(v==='expo')h+=G(P('Tipu espozisaun','Type of exposure')+mWave('Kategoria kanek kada fulan',R,[{name:'Kategoria I',c:'#f59e0b',f:r=>catLv(r[CATG])===1},{name:'Kategoria II',c:'#14b8a6',f:r=>catLv(r[CATG])===2},{name:'Kategoria III',c:'#e0533d',f:r=>catLv(r[CATG])===3}],{cls:'w2'})+O('Númeru kanek','Number of wounds',['*1','*2-3','*>3'])+P('Tata ho provokasaun','Bite provoked')+P('Estragus iha kulit','Skin broken (scratch)')+P('Kanek ran sai','Wound bleeding')+P('Profundidade kanek','Wound depth')+C('Kanek fase >15 minutu','Wound washed for >15 minutes')+B('Fatin iha isin (top 8)','Bite / wound body site(s)',{top:8}));
+if(v==='animal')h+=G(C('Espésie animál','Animal species',{pct:1})+P("Estatutu Na'in ba Animál",'Dog ownership status')+P('Kondisaun animál hafoin tata','Animal condition after bite')+P('Sinál klíniku animál','Animal clinical signs')+P('Simu vasina (tinan kotuk)','Animal vaccinated against rabies in past year')+C('Observasaun loron 10','10-day animal observation completed')+mWave('Espésimen animál no rezultadu pozitivu kada fulan',R,[{name:'Foti espésimen',c:'#0e5f73',f:r=>r['Animal specimen collected']==='Yes'},{name:'Pozitivu raiva',c:'#e0533d',f:r=>r['Animal laboratory result']==='Positive'}],{cls:'w2'})+P('Rezultadu laboratóriu','Animal laboratory result'));
+if(v==='pep'){
+/* PEP: kazu elejível = Planu rejime PEP 'Sim' ka iha ona data dóze. Kada kazu konta dala ida deit tuir dóze ikus ne'ebé simu (husi data dóze iha planilla). */
+const el=R.filter(r=>planY(r)||dTop(r)>0),M=el.length,q=n=>M?Math.round(n/M*100)+'%':'–',lv=i=>el.filter(r=>dTop(r)===i).length;
+const n0=lv(0),n1=lv(1),n2=lv(2),n3=lv(3),n4=lv(4);
+const ST=[["Dóze 1 de'it (loron 0)",n1],["To'o dóze 2 (loron 3)",n2],["To'o dóze 3 (loron 7)",n3],['Kompletu 4 dóze (loron 14-28)',n4]].concat(n0?[['Seidauk simu dóze',n0]]:[]);
+const mx=Math.max(1,...ST.map(x=>x[1]));
+h+=`<div class="kpis">${kpi('Total kazu',N)}${kpi('Kazu elejível ba PEP',M,p(M)+' husi '+N+' kazu')}${ST.slice(0,4).map(([l,n])=>kpi(l,n,q(n)+' husi '+M+' elejível')).join('')}</div>`;
+h+=`<div class="card"><h4>Estatutu dóze PEP — kazu ${M} elejível</h4>${M?ST.map(([l,n])=>`<div class="br"><span>${esc(l)}</span><div><i style="width:${n/mx*100}%"></i></div><b>${n} <small>${q(n)}</small></b></div>`).join('')+`<div class="br" style="border-top:1px solid var(--line);padding-top:6px"><span><b style="text-align:left">Total elejível</b></span><div style="background:none"></div><b>${M} <small>100%</small></b></div>`:none}</div>`;
+/* RIG */
+const g3=R.filter(r=>catLv(r[CATG])===3),r3=g3.filter(r=>rigY(r)).length,rg=c('Rabies immunoglobulin received','Yes');
+h+=mWave('Kazu elejível no PEP kompletu kada fulan',R,[{name:'Elejível ba PEP',c:'#14b8a6',f:r=>planY(r)||dTop(r)>0},{name:'Kompletu 4 dóze',c:'#fb8a6e',f:r=>dTop(r)===4},{name:'Simu RIG',c:'#0e5f73',f:r=>rigY(r)}],{W:1100,H:290,foot:'Kazu sira ne\'ebé rejista iha fulan ida-idak. Kazu foun barak mak seidauk iha tempu atu kompleta dóze 4.'});h+=G(P('Simu RIG (kazu hotu)','Rabies immunoglobulin received')+colc(`Kategoria III simu RIG (kazu ${g3.length})`,[['Simu RIG',r3],['La simu RIG',g3.length-r3]],{keep:1,pct:1,den:g3.length||1,foot:`RIG rekomenda ba kanek Kategoria III. Total simu RIG: ${rg} kazu (${p(rg)} husi ${N}).`}))}
+if(v==='time'){const iv=[['Tata → PEP dóze 1',r=>gap(r[EXP],r[D0])],['Tata → sintoma hahú',r=>gap(r[EXP],r[SON])],['Tata → mate',r=>gap(r[EXP],r[DTH])],['Sintoma hahú → mate',r=>gap(r[SON],r[DTH])]],g=R.map(r=>gap(r[EXP],r[D0])).filter(x=>x!==null),bc=[0,0,0,0,0];g.forEach(x=>bc[x<3?x:x<=7?3:4]++);const tm=cnt(R.map(r=>({t:!r[D0]?'Laiha data PEP':gap(r[EXP],r[D0])===null?'Data la konsistente':gap(r[EXP],r[D0])<=1?'≤1 loron':'>1 loron'})),'t'),cs=R.filter(r=>r[SON]||r[ADM]||r[DTH]),f=x=>x==null?'–':x;h+=`<div class="kpis">${kpi('Mediana tata → PEP (loron)',g.length?med(g):'–','kazu '+g.length)}${kpi('PEP iha loron 1 nia laran',g.length?Math.round(g.filter(x=>x<=1).length/g.length*100)+'%':'–')}${kpi('Ho sintoma',R.filter(r=>r[SON]).length)}${kpi('Mate',R.filter(r=>r[DTH]||r['Died']==='Yes').length)}</div>`+G(pie('Pontualidade hahú PEP',tm)+colc("Atrazu husi tata to'o PEP dóze 1",['Loron hanesan','1 loron','2 loron','3–7 loron','>7 loron'].map((k,i)=>[k,bc[i]]),{keep:1,pct:1,den:g.length}))+mWave('Pontualidade PEP dóze 1 kada fulan',R,[{name:'≤1 loron',c:'#14b8a6',f:r=>{const x=gap(r[EXP],r[D0]);return x!==null&&x<=1}},{name:'>1 loron',c:'#fb8a6e',f:r=>{const x=gap(r[EXP],r[D0]);return x!==null&&x>1}}],{W:1100,H:290,foot:'Loron husi tata to\'o PEP dóze 1. Liña verde aas = di\'ak.'})+pontTbl(R)+`<div class="card"><h4>Rezumu intervalu (loron)</h4><div class="tw"><table><tr><th>Intervalu</th><th>n</th><th>Mediana</th><th>Variasaun</th></tr>${iv.map(([l,fn])=>{const a=R.map(fn).filter(x=>x!==null);return `<tr><td>${l}</td><td>${a.length}</td><td>${a.length?med(a):'–'}</td><td>${a.length?Math.min(...a)+' – '+Math.max(...a):'–'}</td></tr>`}).join('')}</table></div></div>`+(cs.length?`<div class="card"><h4>Kazu ho sintoma / baixa / mate</h4><div class="tw"><table><tr><th>Rejistu</th><th>Tata</th><th>PEP dóze 1</th><th>Sintoma hahú</th><th>Baixa</th><th>Mate</th></tr>${cs.map(r=>`<tr><td>${esc(r['Record No.'])}</td><td>${f(r[EXP]||null)}</td><td>${f(r[D0]||null)}</td><td>${f(r[SON]||null)}</td><td>${f(r[ADM]||null)}</td><td>${f(r[DTH]||null)}</td></tr>`).join('')}</table></div></div>`:'')}
+if(v==='map'){let bad=0;R.forEach(r=>{const la=parseFloat(String(r[LAT]).replace(',','.')),lo=parseFloat(String(r[LON]).replace(',','.'));if(isNaN(la)||isNaN(lo))return;if(la<-9.6||la>-8||lo<124||lo>127.4){bad++;return}pts.push([la,lo,r])});h+=`<div class="card"><div class="ch"><h4>Fatin espozisaun <small>kazu ${pts.length} husi ${N} iha mapa${bad?` · ${bad} iha li'ur Timor-Leste`:''}</small></h4><span class="mlg">${Object.entries(MCOL).map(([k,c])=>`<span><i style="background:${c}"></i>${tt(k)}</span>`).join('')}</span></div><div id="map" style="height:480px;border-radius:12px;overflow:hidden"></div></div>`}
+$('#view').innerHTML=h;if(isFP())fpTidy();if(v==='map')initMap(pts)}
+/* ===== Focal Point: hatudu de'it grafiku ho dadus husi nia SSK =====
+   - hamoos kartaun 'Laiha dadus' (grafiku ne'ebé la iha relasaun ho dadus SSK ne'e)
+   - subar filtru xave (Munisípiu / Postu / SSK) no hatudu naran SSK iha leten */
+function fpTidy(){const V=$('#view');
+V.querySelectorAll('.card').forEach(c=>{const kids=[...c.children];if(kids.some(k=>k.tagName==='P'&&k.classList.contains('mut')&&k.textContent.trim()==='Laiha dadus'))c.remove()});
+V.querySelectorAll('.grid').forEach(g=>{if(!g.children.length)g.remove()});
+const fb=V.querySelector('.fb');if(fb){fb.querySelectorAll('label').forEach(l=>{const s=l.querySelector('select');if(s&&s.disabled)l.style.display='none'});
+ const t=document.createElement('label');t.className='fpssk';t.innerHTML=`<span class="fi">🏥</span><span class="ft"><small>Dadus husi</small><b>${esc(U.ssk||U.post)}</b></span>`;fb.prepend(t)}
+if(!V.querySelector('.card,.kpi')){const p=document.createElement('div');p.className='card';p.innerHTML='<p class="mut" style="text-align:center;margin:30px 0">Seidauk iha dadus husi '+esc(U.ssk||U.post)+' ba filtru ne\'e.</p>';V.append(p)}}
+/* ===== Pontualidade PEP dóze 1: tabela kada fulan, indikadór xave no konkluzaun ===== */
+function pontTbl(R){const M=mRange(R),tot=R.length;if(!M)return '';const by={};let bad=0,mx=0;
+R.forEach(r=>{const g=gap(r[EXP],r[D0]);if(g===null){bad++;return}mx=Math.max(mx,g);const k=mKey(r);if(!k)return;const o=by[k]=by[k]||{a:0,b:0};g<=1?o.a++:o.b++});
+const rows=M.K.map((k,i)=>{const o=by[k]||{a:0,b:0},n=o.a+o.b;return {l:M.L[i],a:o.a,b:o.b,n,p:n?o.a/n:null}}),T=rows.reduce((s,x)=>({a:s.a+x.a,b:s.b+x.b}),{a:0,b:0});T.n=T.a+T.b;T.p=T.n?T.a/T.n:null;
+const st=p=>p===null?'<span class="mut">–</span>':p<.5?'<span class="bd n">Kritiku</span>':p<.7?'<span class="bd w">Presiza atensaun</span>':'<span class="bd y">Di\'ak</span>';
+const pc=p=>p===null?'–':Math.round(p*100)+'%',bg=p=>p===null?'':p<.5?'background:color-mix(in srgb,#e8674f 22%,transparent)':p>=.8?'background:color-mix(in srgb,#2e9e48 18%,transparent)':'';
+const V=rows.filter(x=>x.n),best=V.length?V.reduce((m,x)=>x.p>m.p?x:m):null,worst=V.length?V.reduce((m,x)=>x.p<m.p?x:m):null,busy=V.length?V.reduce((m,x)=>x.n>m.n?x:m):null;
+const tbl=`<div class="card w2"><h4>Pontualidade PEP dóze 1 kada fulan — tabela</h4><div class="tw"><table><tr><th>Fulan</th><th>Tempu loos (≤1 loron)</th><th>Tardi (&gt;1 loron)</th><th>Total kazu</th><th>% tempu loos</th><th>% tardi</th><th>Estatutu</th></tr>`+
+rows.map(x=>`<tr><td><b>${esc(x.l)}</b></td><td>${x.a}</td><td>${x.b}</td><td>${x.n}</td><td style="${bg(x.p)};font-weight:700">${pc(x.p)}</td><td>${x.p===null?'–':pc(1-x.p)}</td><td>${st(x.p)}</td></tr>`).join('')+
+`<tr style="font-weight:800"><td>Total</td><td>${T.a}</td><td>${T.b}</td><td>${T.n}</td><td style="${bg(T.p)}">${pc(T.p)}</td><td>${T.p===null?'–':pc(1-T.p)}</td><td>${st(T.p)}</td></tr></table></div>
+<p class="mut" style="font-size:11.5px;margin:8px 0 0;text-align:center">Tempu loos = PEP dóze 1 iha loron hanesan ka loron 1 hafoin tata (WHO: PEP lalais liu). Fulan tuir Data rejistu.</p></div>`;
+const K=`<div class="kpis">${kpi('Kazu konta iha pontualidade',T.n,'husi '+tot+' kazu')}${kpi('Kazu la konta',bad,'data mamuk / la válidu')}${kpi('% tempu loos (total)',pc(T.p),T.a+' husi '+T.n)}${kpi("Fulan di'ak liu",best?`<span class="kpiw">${esc(best.l)}</span>`:'–',best?pc(best.p)+' tempu loos':'')}${kpi('Fulan aat liu',worst?`<span class="kpiw">${esc(worst.l)}</span>`:'–',worst?pc(worst.p)+' tempu loos':'')}${kpi('Fulan ho kazu barak liu',busy?`<span class="kpiw">${esc(busy.l)}</span>`:'–',busy?busy.n+' kazu':'')}</div>`;
+const C=[];if(T.p!==null)C.push(`Kuaze ${Math.round(T.p*10)} husi 10 pasiente simu PEP dóze 1 iha tempu loos (≤1 loron hafoin tata).`);
+rows.filter(x=>x.p!==null&&x.p<.5).forEach(x=>C.push(`<b>${esc(x.l)}</b>: kritiku — pasiente tardi (${x.b}) barak liu tempu loos (${x.a}). Verifika stock vasina, asesu ka atrazu rejistu.`));
+if(busy&&busy.b>0)C.push(`<b>${esc(busy.l)}</b>: kazu barak liu (${busy.n}); tardi ${busy.b} (${pc(1-busy.p)}).`);
+if(bad)C.push(`Kazu ${bad} la konta tanba data tata ka data dóze 1 mamuk / la válidu — kompleta iha Jestaun Dadus.`);
+if(mx>30)C.push(`Intervalu máximu ${mx} loron — posivelmente erru hakerek tinan. Verifika data dóze 1 / data tata.`);
+const cc=`<div class="card"><h4>Konkluzaun no rekomendasaun</h4><ul style="margin:6px 0 0;padding-left:18px;line-height:1.7;font-size:13px">${C.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+return K+`<div class="grid">${tbl}${cc}</div>`}
+/* ===== Mapa ba PDF: kria imajen rasik husi mapa (pozisaun titik kazu exatu, la muda) =====
+   Tile mapa: pozisaun loos husi ekran. Titik kazu: kalkula husi latitude/longitude (MAP.latLngToContainerPoint). */
+function mapSnap(){try{if(!MAP||typeof L==='undefined')return null;const el=$('#map'),W=el.clientWidth,H=el.clientHeight;if(!W||!H)return null;
+const k=2,dark=document.documentElement.dataset.theme==='dark',er=el.getBoundingClientRect();
+const draw=withTiles=>{const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const x=c.getContext('2d');x.scale(k,k);
+ x.fillStyle=dark?'#1b2a22':'#eef3ee';x.fillRect(0,0,W,H);
+ if(withTiles){if(dark)x.filter='invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)';
+  el.querySelectorAll('img.leaflet-tile').forEach(t=>{if(!t.complete||!t.naturalWidth)return;const r=t.getBoundingClientRect();x.drawImage(t,r.left-er.left,r.top-er.top,r.width,r.height)});x.filter='none'}
+ MAPPTS.forEach(([la,lo,r])=>{const p=MAP.latLngToContainerPoint([la,lo]);if(p.x<-10||p.y<-10||p.x>W+10||p.y>H+10)return;
+  x.beginPath();x.arc(p.x,p.y,7,0,Math.PI*2);x.fillStyle=MCOL['Grade '+catLv(r[CATG])]||'#94a3b8';x.globalAlpha=.9;x.fill();x.globalAlpha=1;x.lineWidth=1.5;x.strokeStyle='#fff';x.stroke()});
+ x.font='11px sans-serif';x.fillStyle=dark?'#ddd':'#333';x.textAlign='right';x.fillText('© OpenStreetMap',W-6,H-6);
+ return c.toDataURL('image/png')};
+try{return draw(true)}catch(e){return draw(false)} /* se tile la permite (CORS), titik kazu sempre loos */
+}catch(e){console.log(e);return null}}
+/* ===== Rezumu jerál: grafik foun ===== */
+/* Ranking Top 10: númeru 1-10, naran, kazu no % (husi kazu hotu) */
+function rank(t,e,tot,blank){e=e.slice().sort((a,b)=>b[1]-a[1]);const top=e.slice(0,10),mx=Math.max(1,...top.map(x=>x[1])),sum=top.reduce((s,x)=>s+x[1],0),pc=v=>tot?Math.round(v/tot*100)+'%':'–';
+return `<div class="card"><h4>${esc(t)}</h4>${top.length?top.map(([k,v],i)=>`<div class="rk t${i+1}" title="${esc(k)}: ${v} kazu (${pc(v)})"><span class="n">${i+1}</span><div class="bx"><i style="width:${Math.max(3,v/mx*100)}%"></i><span><em>${esc(tt(k))}</em><b>${v}<small>${pc(v)}</small></b></span></div></div>`).join(''):none}</div>`}
+/* Sexu: kaixa Mane / Feto ho ikon, númeru no % */
+function sexC(R){const m=R.filter(r=>r.Sex==='Male').length,f=R.filter(r=>r.Sex==='Female').length,t=m+f,o=R.length-t,pc=v=>t?Math.round(v/t*100):0;
+if(!t)return `<div class="card"><h4>Sexu</h4>${none}</div>`;
+return `<div class="card"><h4>Sexu</h4><div class="sx"><div class="sxt m"><span class="sxi">♂</span><b>${m}</b><small>Mane · ${pc(m)}%</small></div><div class="sxt f"><span class="sxi">♀</span><b>${f}</b><small>Feto · ${pc(f)}%</small></div></div><div class="sxbar"><i class="m" style="width:${pc(m)}%"></i><i class="f" style="width:${100-pc(m)}%"></i></div></div>`}
+/* ===== Grafiku ombak: liña suave ho área gradiente, pontu no valór ===== */
+const WPAL=['#14b8a6','#fb8a6e','#0e5f73','#f59e0b'];let WID=0;
+const niceMax=v=>{if(v<=8)return Math.max(4,Math.ceil(v/4)*4);const p=Math.pow(10,Math.floor(Math.log10(v))),m=v/p,st=[1,1.2,1.6,2,2.4,3,4,5,6,8,10];return st.find(x=>x>=m)*p};
+function smooth(P,t,b){if(P.length<2)return `M${P[0][0]},${P[0][1]}`;const c=v=>Math.min(b,Math.max(t-8,v));let d=`M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2;d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)},${c(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)},${c(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`}return d}
+function wave(t,L,S,o={}){const n=L.length,cls=o.cls||'',hd=`<div class="ch"><h4>${t}</h4>${o.head||''}</div>`,ft='';
+if(!n||!S.some(s=>s.v.some(v=>v>0)))return `<div class="card ${cls}">${hd}${none}${ft}</div>`;
+const W=o.W||640,H=o.H||(o.rot?270:240),pl=38,pr=18,pt=26,pb=o.rot?52:30,iw=W-pl-pr,ih=H-pt-pb,base=pt+ih,top=niceMax(Math.max(1,...S.flatMap(s=>s.v)));
+const X=i=>pl+(n===1?iw/2:i*iw/(n-1)),Y=v=>base-v/top*ih;let g='';
+for(let k=0;k<=4;k++){const v=top*k/4,y=Y(v).toFixed(1);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" class="wg"/><text x="${pl-6}" y="${(+y+3.5).toFixed(1)}" class="wy">${Math.round(v)}</text>`}
+const step=Math.ceil(n/(o.maxLab||14));let xl='';L.forEach((l,i)=>{if(i%step&&i!==n-1)return;xl+=o.rot?`<text transform="translate(${X(i).toFixed(1)},${base+10}) rotate(-60)" class="wxr">${esc(l)}</text>`:`<text x="${X(i).toFixed(1)}" y="${base+19}" class="wx">${esc(l)}</text>`});
+let body='',pts='';S.forEach((s,si)=>{const c=s.c||WPAL[si%4],id='wgr'+(++WID),P=s.v.map((v,i)=>[X(i),Y(v)]),d=smooth(P,pt,base),mxv=Math.max(...s.v),many=n>16;
+body+=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity="${S.length>1?.16:.34}"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs><path d="${d} L${X(n-1).toFixed(1)},${base} L${X(0).toFixed(1)},${base} Z" fill="url(#${id})"/><path d="${d}" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" class="wl"/>`;
+s.v.forEach((v,i)=>{pts+=`<circle cx="${P[i][0].toFixed(1)}" cy="${P[i][1].toFixed(1)}" r="${many?2.2:3.3}" fill="var(--card)" stroke="${c}" stroke-width="1.6"><title>${esc(s.name||'')} · ${esc(L[i])}: ${v}</title></circle>`})});
+/* Númeru iha pontu hotu: valór aas iha leten, seluk iha okos; la sobrepoin malu */
+const many=n>16;for(let i=0;i<n;i++){const it=S.map((s,si)=>({v:s.v[i],y:Y(s.v[i]),c:s.c||WPAL[si%4]})).sort((a,b)=>a.y-b.y);const ly=[];it.forEach((o2,k)=>{let y=k===0?o2.y-10:o2.y+19;if(k&&y<ly[k-1]+13)y=ly[k-1]+13;ly.push(y)});for(let k=ly.length-1;k>=0;k--)ly[k]=Math.min(ly[k],k===ly.length-1?base-4:ly[k+1]-13);
+it.forEach((o2,k)=>{pts+=`<text x="${X(i).toFixed(1)}" y="${ly[k].toFixed(1)}" class="wv" fill="${o2.c}"${many?' style="font-size:9.5px"':''}>${o2.v}</text>`})}
+const leg=S.length>1?`<div class="wlg">${S.map((s,si)=>`<span><i style="background:${s.c||WPAL[si%4]}"></i>${esc(s.name)}${s.tot!=null?` <b>${s.tot}</b>`:''}</span>`).join('')}</div>`:'';
+return `<div class="card ${cls}">${hd}<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" class="wv-svg" role="img" aria-label="${esc(String(t).replace(/<[^>]*>/g,''))}">${g}${body}${pts}${xl}</svg>${leg}${ft}</div>`}
+const waveE=(t,e,o)=>wave(t,e.map(x=>x[0]),[{name:'Kazu',v:e.map(x=>x[1])}],{head:o.head,foot:o.foot,rot:1,maxLab:60,W:1150,H:300});
+/* Kazu kada fulan (tuir Data rejistu) ba seri ida ka barak */
+const mKey=r=>{const d=String(r[RD]||'');return /^\d{4}-\d{2}/.test(d)?+d.slice(0,4)*100+ +d.slice(5,7):0};
+function mRange(R){const ks=[...new Set(R.map(mKey).filter(Boolean))];if(!ks.length)return null;let k=Math.min(...ks);const end=Math.max(...ks),yr=Math.floor(k/100)!==Math.floor(end/100),K=[];
+while(k<=end){K.push(k);k=k%100===12?(Math.floor(k/100)+1)*100+1:k+1}return {K,L:K.map(k=>MESES[k%100-1]+(yr?' '+String(Math.floor(k/100)).slice(2):''))}}
+function mWave(t,R,defs,o={}){const M=mRange(R);if(!M)return wave(t,[],[],o);const by={};R.forEach(r=>{const k=mKey(r);if(k)(by[k]=by[k]||[]).push(r)});
+return wave(t,M.L,defs.map(d=>({name:d.name,c:d.c,v:M.K.map(k=>(by[k]||[]).filter(d.f).length),tot:R.filter(d.f).length})),o)}
+const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+/* Kazu kada fulan tuir Data rejistu (fulan mamuk mós hatudu ho 0) */
+function monthC(R){const sk=R.filter(r=>!mKey(r)).length;return mWave('Kazu kada fulan (tuir data rejistu)',R,[{name:'Kazu',f:()=>true}],{cls:'w2',foot:sk?`Kazu ${sk} laiha data rejistu válidu.`:''})}
+/* Estatutu dóze PEP — hanesan pájina PEP no RIG (kada kazu konta dala ida tuir dóze ikus) */
+function pepC(R){const el=R.filter(r=>planY(r)||dTop(r)>0),M=el.length,lv=i=>el.filter(r=>dTop(r)===i).length;
+if(!M)return `<div class="card"><h4>Estatutu dóze PEP</h4>${none}</div>`;
+return colc(`Estatutu dóze PEP (kazu ${M} elejível)`,[["Dóze 1 de'it",lv(1)],["To'o dóze 2",lv(2)],["To'o dóze 3",lv(3)],['Kompletu 4 dóze',lv(4)]].concat(lv(0)?[['Seidauk simu',lv(0)]]:[]),{keep:1,pct:1,den:M,foot:`Kompletu 4 dóze: ${lv(4)} husi ${M} (${Math.round(lv(4)/M*100)}%).`})}
+/* Kategoria III simu RIG */
+function rig3C(R){const g=R.filter(r=>catLv(r[CATG])===3),y=g.filter(r=>rigY(r)).length;
+return pie(`Kategoria III simu RIG (kazu ${g.length})`,g.length?[['Simu RIG',y],['La simu RIG',g.length-y]]:[])}
+const MCOL={'Grade 1':'#FFC726','Grade 2':'#f08a00','Grade 3':'#DC241F'};
+let MAPPTS=[];function initMap(pts){MAPPTS=pts;if(typeof L==='undefined'){$('#map').innerHTML='<p class="mut" style="padding:20px">Labele karrega bibliotéka mapa.</p>';return}MAP&&MAP.remove();MAP=L.map('map').setView([-8.47,126.45],9);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',crossOrigin:'anonymous'}).addTo(MAP);pts.forEach(([la,lo,r])=>L.circleMarker([la,lo],{radius:7,color:'#fff',weight:1.5,fillColor:MCOL['Grade '+catLv(r[CATG])]||'#94a3b8',fillOpacity:.9}).bindPopup(`<b>Rejistu #${esc(r['Record No.'])}</b><br>${esc(r[EXP]||'')} · ${esc(tt(r['Type of exposure']))}<br>${esc(tt(r[CATG]||''))} · ${esc(tt(r['Animal species']))}<br>${esc(r[POSTN])}`).addTo(MAP));if(pts.length)MAP.fitBounds(pts.map(x=>[x[0],x[1]]),{maxZoom:13,padding:[20,20]})}
+const kpi=(l,v,s)=>`<div class="kpi"><span>${l}</span><b>${v}</b><span>${s||''}</span></div>`;
+const calcAge=(d,r)=>{const a=new Date(d),b=new Date(r);let y=b.getFullYear()-a.getFullYear();if(b.getMonth()<a.getMonth()||(b.getMonth()===a.getMonth()&&b.getDate()<a.getDate()))y--;return y<0?'':y};
+const grp=a=>{a=parseFloat(a);return isNaN(a)?'':a<5?'0 - 4':a<15?'5 - 14':a<50?'15 - 49':a<65?'50 - 64':'> 65'};
+function fld(f,v,E){const n=esc(f.name);let i;if(f.name===AGE)i=`<input data-name="${n}" id="fage" type="number" value="${esc(v)}">`;else if(f.type==='auto')i=`<input disabled data-auto="${n}" value="${esc(v)}" placeholder="${E?'':'Automátiku'}">`;else if(f.type==='select'){let o=f.options.slice(),d='';if(f.name===MUN){o=[...new Set([U.mun].concat(f.options.filter(x=>nz(x)!==nz(U.mun))))];if(!v)v=U.mun}if(f.name===POSTN){const ou=outPosts().concat(['Seluk']);o=lockPost()?[U.post].concat(ou):postsOf(U.mun).concat(ou);if(!v&&lockPost())v=U.post}if(v&&!o.includes(v))o.push(v);i=f.name===SSK?`<select data-name="${n}">${ssOpts(CURPOST,v,1)}</select>`:`<select data-name="${n}" ${d} ${f.name===POSTN?'onchange="cascade()"':''}><option value="">—</option>${o.map(x=>`<option value="${esc(x)}" ${x===v?'selected':''}>${esc(pt(tt(x)))}</option>`).join('')}</select>`}else if(isLong(f))i=`<textarea data-name="${n}" rows="${/breve|brief|ist[oó]ria\s*kl/i.test((f.label||'')+' '+f.name)?5:3}" placeholder="Hakerek iha ne'e…">${esc(v)}</textarea>`;else i=`<input data-name="${n}" type="${f.type==='date'||f.type==='time'?'text':f.type}" ${f.type==='date'?'data-dt="1"':''} step="any" value="${esc(v)}" ${f.name===DOB?'id="fdob"':''}>`;return `<label class="fld${isLong(f)?' wide':''}"><span>${pf(esc(f.name===SSK?'Hospital/SSK/Klinika Privada':(f.label||tt(f.name))))}</span>${i}</label>`}
+const XLONG=/koment[aá]riu|comment|breve\s*ist[oó]ria|brief\s*clinical|ist[oó]ria\s*kl[ií]nika|clinical\s*history|nota\b|notes?\b|observa(saun|tion)/i,isLong=f=>f.type!=='select'&&f.type!=='date'&&f.type!=='number'&&f.type!=='auto'&&(XLONG.test(f.name)||XLONG.test(f.label||'')||XLONG.test(tt(f.name)))&&!/observasaun\s*anim|animal\s*observation|10[-\s]*day/i.test((f.label||'')+' '+f.name);
+/* ===== Orden seksaun: Informasaun animál molok Detalle PEP ===== */
+/* ===== Seksaun RIG / PEP / Animál: kampu ida-idak tama ba seksaun tuir nia indikadór ===== */
+const isG=(g,rx)=>rx.test(g)||rx.test(tt(g));
+const XSRC=/anim[aá]l|vasinasaun\s*anterior|previous\s*vaccination|\brig\b|\bpep\b/i;
+const XF_PREP=/\bprep\b|pr[eé][\s-]*e[xks]+po[sz]i|pre[\s-]*exposure/i,isPrep=f=>XF_PREP.test(f.name)||XF_PREP.test(tt(f.name))||XF_PREP.test(f.label||'');
+const SECS=[['__HIS','Istoria Vacina Raiva Anterior (PEP & RIG)'],['__PREP','Detalle PrEP'],['__PEP','Detalle PEP'],['__RIG','Detalle RIG'],['__ANI','Informasaun animál']];
+const XF_RIG=/\brig\b|[ie]n?munoglobulin|immunoglobulin|infiltra|^\s*volume/i,
+      XF_ANI=/anim[aá]l|\basu\b|\bbusa\b|sp[eé]sie|esp[eé]sime|specimen|observasaun|observation|laborat|na'?in|ownership|kondisaun\s*animal/i;
+/* ===== Istoria Vacina Raiva Anterior (PEP & RIG): kampu 9 tuir orden ne'e =====
+   Kada kampu buka kolun planilla tuir lista regex (prioridade husi karuk ba loos). Kolun la iha → kampu foun (virtual). */
+const HSLOTS=[
+ ['Antes Simu Ona Vacina Raiva','select',['Sim','Nao'],[/antes\s*simu\s*ona\s*va[cs]ina/i,/^\s*simu\s*ona\s*va[cs]ina\s*raiva/i,/previously\s*received.*rabies\s*vacc/i]],
+ ['Data Simu Vacina Ikus','date',[],[/data\s*simu\s*va[cs]ina\s*ikus/i,/data\s*va[cs]ina\s*raiva\s*ikus|last\s*rabies\s*vacc|date.*previous.*vacc/i]],
+ ['Naran/Kodigu Vacina','text',[],[/naran\s*\/?\s*k[oó]digu\s*va[cs]ina|va[cs]ina\s*raiva\s*\(?\s*naran|(previous\s*)?(rabies\s*)?vaccine\s*(name|brand|code)/i]],
+ ['Efeitu Adversu Post-PEP','select',['Iha','La iha'],[/efeitu\s*advers[ou]\s*post[\s_-]*(va[cs]inasaun|pep)|adverse.*(post|after).*(vacc|pep)/i]],
+ ['Antes Simu Ona RIG','select',['Sim','Nao'],[/antes\s*simu\s*ona\s*rig/i,/^\s*simu\s*rig\s*$|^\s*rig\s*received\s*$/i,/^\s*rabies\s*immunoglobulin\s*received\s*$/i]],
+ ['Data Simu RIG','date',[],[/data\s*simu\s*rig|date.*rig\s*(received|given)|^\s*rig\s*date/i]],
+ ['Naran/Kodigu Inmuoglobulina','text',[],[/naran\s*\/?\s*k[oó]digu\s*i[mn]+u?n?o?globulin/i,/tip[eu]\s*i[mn]+u?n?o?globulin|immunoglobulin\s*(type|brand|name)/i]],
+ ['Efeitu Adversu Post-RIG','select',['Iha','La iha'],[/efeitu\s*advers[ou]\s*post[\s-]*rig|adverse.*\brig\b/i]],
+ ['Rajaun La Simu RIG','select',['Laos Kategoria III','Pasiente rezeita','RIG la disponible','Seluk'],[/r[ae][jz]aun\s*la\s*simu\s*rig|reason.*(no|not).*rig/i]]];
+/* Kampu ho opsaun fixu (Sim / Nao, rajaun la simu RIG) */
+const HFORCE=[0,3,4,7,8];
+let SLOTMAP=null,SLOTMETA=null;
+function slotMap(){if(SLOTMETA===META&&SLOTMAP)return SLOTMAP;const m=new Map(),used=new Set(),hit=(f,rx)=>rx.test(f.name)||rx.test(tt(f.name))||rx.test(f.label||'');
+HSLOTS.forEach((h,i)=>{for(const rx of h[3]){const f=((META&&META.fields)||[]).find(x=>!used.has(x)&&!isPrep(x)&&hit(x,rx));if(f){used.add(f);m.set(f,i);break}}});SLOTMAP=m;SLOTMETA=META;return m}
+const slotOf=f=>{if(f.virt)return f.slot;const i=slotMap().get(f);return i===undefined?-1:i};
+function histFields(){const m=slotMap();return HSLOTS.map(([lb,ty,op],i)=>{let f=null;m.forEach((v,k)=>{if(v===i)f=k});return f?Object.assign({},f,{label:lb},HFORCE.includes(i)?{type:ty,options:op}:{}):{name:lb.toUpperCase(),label:lb,type:ty,options:op,group:'__HIS',virt:1,slot:i}})}
+const secOf=f=>{if(isPrep(f))return '__PREP';if(slotOf(f)>=0||isKH(f))return '__HIS';if(!isG(f.group,XSRC))return f.group;const n=f.name,l=tt(f.name);if(XF_RIG.test(n)||XF_RIG.test(l))return '__RIG';if(XF_ANI.test(n)||XF_ANI.test(l))return '__ANI';return '__PEP'};
+/* ===== v3.0: seksaun no orden indikadór mai husi servidór (SCHEMA iha Code.gs) ===== */
+function formGroups(){return [...new Set(META.fields.map(f=>f.group).filter(Boolean))]}
+const secFields=g=>META.fields.filter(f=>f.group===g);
+/* Kampu ne'ebé la hatudu iha formuláriu (valór tuan rai nafatin) */
+/* ===== PrEP: hakerek 'PrEP' (la'ós PREP) ===== */
+const pt=t=>String(t==null?'':t).replace(/\bprep\b/gi,'PrEP'),pf=h=>String(h).replace(/\bprep\b/gi,'<span class="nt">PrEP</span>');
+/* ===== Detalle PrEP: subar kampu dupla (grupu dahuluk: Simu PrEP to'o PrEP Doze 3). Dadus iha planilla la muda. ===== */
+const PDUP=[/^\s*narn?\s*va[cs]ina\s*prep/i,/^\s*r[ae][jz]aun\s*simu\s*prep/i,/^\s*regime\s*prep/i,/^\s*prep\s*doze\s*[123]\b/i],PSIMU=/^\s*simu\s*prep\s*$/i;
+const plb=f=>String(f.label||tt(f.name)||'');
+const isPrepDup=f=>false,isPrepDupOld=f=>{const t=plb(f);if(PDUP.some(r=>r.test(t)))return true;if(PSIMU.test(t)){const all=((META&&META.fields)||[]).filter(x=>PSIMU.test(plb(x)));return all.length>1&&all[0]===f}return false};
+const XHIDE=/vaccine\s*dose\s*status|^\s*stat?u?tu\s*va[cs]ina\s*$|data\s*injeksaun\s*rig|tip[eu]\s*rig\s*\(?\s*naran|statutu\s*va[cs]inasaun\s*anterio|previous\s*vaccination\s*status/i,isHid=f=>XHIDE.test(f.name)||XHIDE.test(tt(f.name))||isPrepDup(f)||(isG(f.group,/vasinasaun\s*anterior|previous\s*vaccination/i)&&!isPrep(f)&&slotOf(f)<0&&!isKH(f))||(PVOLD.includes(f.name)&&slotOf(f)<0);
+const XKRIG=/koment[aá]riu\s*rig/i,isKR=f=>XKRIG.test(f.name)||XKRIG.test(tt(f.name)),KRIG='KOMENTARIU RIG';
+const XKPEP=/koment[aá]riu\s*pep/i,isKP=f=>XKPEP.test(f.name)||XKPEP.test(tt(f.name)),KPEP='KOMENTARIU PEP',XKEXP=/koment[aá]riu\s*e[xks]{1,2}po[sz]is+[aã]un|exposure\s*comment/i,isKE=f=>XKEXP.test(f.name)||XKEXP.test(tt(f.name)),KEXP='KOMENTARIU ESPOZISAUN',XKANI=/koment[aá]riu\s*anim[aá]l/i,isKA=f=>XKANI.test(f.name)||XKANI.test(tt(f.name)),KANI='KOMENTARIU ANIMAL',XKHIS=/koment[aá]riu\s*ist[oó]ria|koment[aá]riu\s*va[cs]ina\s*anterior/i,isKH=f=>XKHIS.test(f.name)||XKHIS.test(tt(f.name)),KHIS='KOMENTARIU ISTORIA VASINA',isK=f=>isKR(f)||isKP(f)||isKE(f)||isKA(f)||isKH(f);
+const expG=()=>META.fields.map(f=>f.group).find(g=>isG(g,/exposure|e[xks]{1,2}po[sz]is+[aã]un/i));
+/* Informasaun espozisaun: la hatudu kampu imunizasaun (vasina raiva, RIG / imunoglobulina, rejime PEP, dóze). Dadus iha planilla la muda. */
+const XIMU=/va[cs]in|\brig\b|[ie]n?mun?oglobulin|immunoglobulin|d[oó]ze|\bdose\b|\bpep\b|rejime|regime|r[ae][jz]aun\s*la/i,isImu=f=>XIMU.test(f.name)||XIMU.test(f.label||'')||XIMU.test(tt(f.name)),isExpSec=g=>isG(g,/exposure|e[xks]{1,2}po[sz]is+[aã]un/i);
+const fieldsOf=g=>{if(g==='__HIS')return histFields().filter(f=>!isHid(f)).concat(META.fields.filter(isKH));const XG=isExpSec(g),L=META.fields.filter(f=>(isKR(f)?'__RIG':isKP(f)?'__PEP':isKA(f)?'__ANI':isKE(f)?(expG()||f.group):secOf(f))===g&&!isHid(f)&&!(XG&&!isKE(f)&&isImu(f)));const ORD=[MUN,POSTN,SSK,HPK,'Suco of residence','Aldeia of residence'],rk=f=>{const i=ORD.indexOf(f.name);return isLong(f)?200:i<0?99:i};L.sort((x,y)=>rk(x)-rk(y));return L.filter(f=>!isK(f)).concat(L.filter(isK))};
+/* ===== Detalle PrEP: Simu PrEP (Sim/Nao), PrEP Dóze IV, Rajaun Simu PrEP ===== */
+const PD3=/prep\s*d[oó]ze\s*3/i,PD4=/prep\s*d[oó]ze\s*(4|iv)\b|d[oó]ze\s*prep\s*(4|iv)\b/i,PRAZ=/r[ae][jz]aun\s*prep|grupu\s*risku/i;
+/* ===== Detalle PEP: opsaun Planu rejime PEP (IM / ID) no Rejime PEP uza (ho jadwal) ===== */
+const PPLAN=/planned\s*pep\s*regimen|planu\s*re[jg]ime\s*pep/i,PUSED=/pep\s*regimen\s*used|re[jg]ime\s*pep\s*(uza|uja|nebe|ne'ebé)/i;
+const pepOpt=f=>{const t=f.name+' '+tt(f.name)+' '+(f.label||'');if(PUSED.test(t))return Object.assign({},f,{type:'select',options:['IM (0, 3, 7, 14-28)','ID (0, 3, 7)']});if(PPLAN.test(t))return Object.assign({},f,{type:'select',options:['IM','ID']});if(/pep\s*course\s*completed|kursu\s*pep\s*kompletu/i.test(t))return Object.assign({},f,{type:'select',options:['Kompletu','La kompletu','Vacina','La vacina','Iha progresu']});return f};
+/* ===== Detalle RIG: orden indikadór no opsaun ===== */
+const rtx=f=>f.name+' '+tt(f.name)+' '+(f.label||'');
+const RRK=f=>{const t=rtx(f);if(isLong(f))return 100;if(/r[ae][jz]aun|reason/i.test(t))return 7;if(/advers/i.test(t))return 6;if(/data|date/i.test(t))return 1;
+if(/simu\s*rig|rig\s*received|immunoglobulin\s*received/i.test(t))return 0;if(/lote|batch|\blot\b/i.test(t))return 3;if(/volume|\bml\b/i.test(t))return 5;if(/d[oó]ze|dose|\biu\b/i.test(t))return 4;if(/naran|k[oó]digu|brand|name|globulin/i.test(t))return 2;return 50};
+const rigOpt=f=>{const t=rtx(f),k=RRK(f);if(k===0)return Object.assign({},f,{type:'select',options:['Sim','Nao']});if(k===6&&!/r[ae][jz]aun/i.test(t))return Object.assign({},f,{type:'select',options:['Iha','Laiha']});return f};
+/* ===== Detalle PEP: orden no naran indikadór ===== */
+const PEPO=['Previously received >=2 rabies vaccine doses (IM/ID)','Planned PEP regimen','PEP regimen used','Vaccination site',D0,D3,D7,D4,PEPK];
+const PEPL={'Previously received >=2 rabies vaccine doses (IM/ID)':'Simu Ona Vacina Raiva Doze >=2 (IM/ID)','Planned PEP regimen':'Planu Regime PEP','PEP regimen used':'Regime PEP Nebe Uja','Vaccination site':'Fatin Vacina (Sitiu)',
+ [D0]:'Doze 1 (Loron 0)-Data',[D3]:'Doze 2 (Loron 3)-Data',[D7]:'Doze 3 (Loron 7)-Data',[D4]:'Doze 4 (Loron 14-28)-Data',[PEPK]:'Kursu PEP Kompletu'};
+const PEPR=f=>{if(isLong(f))return 100;const i=PEPO.indexOf(f.name);return i<0?50:i};
+/* Kolun vasinasaun anterior tuan: subar se la uza iha Istoria Vacina (dadus la muda) */
+const PVOLD=['Date of last rabies vaccine','Number of previous rabies vaccine doses','Previous rabies vaccine name/code','Adverse event after rabies vaccination'];
+/* ===== Detalle RIG: sub-indikadór 8 tuir orden. Kolun iha planilla → uza; la iha → kampu foun (presiza kolun iha 'dadus' atu rai) ===== */
+const RSLOTS=[
+ ['Rabies immunoglobulin received','Simu RIG','select',['Sim','Nao'],1],
+ ['RIG date received','Data simu RIG','date',[],0],
+ ['Immunoglobulin name/code (brand)','Naran/kódigu inmunoglobulina (marka)','text',[],0],
+ ['RIG batch / lot number','Nú. lote RIG','text',[],0],
+ ['RIG dose (IU)','Dóze RIG (IU)','number',[],0],
+ ['RIG volume (ml)','Volume RIG (ml)','number',[],0],
+ ['Adverse event after RIG','Efeitu adversu post-RIG','select',['Iha','Laiha'],1],
+ ['Reason RIG not given','Razaun la fó RIG','select',['Laos Kategoria III','Pasiente rezeita','RIG la disponible','Seluk'],0]];
+function rigFields(){const F=(META&&META.fields)||[];return RSLOTS.map(([n,lb,ty,op,force])=>{const f=F.find(x=>x.name===n&&slotOf(x)<0);
+ if(!f)return {name:n,label:lb,type:ty,options:op,group:'__RIG',virt:1};
+ const o=Object.assign({},f,{label:lb});if(force||(ty==='select'&&(f.type!=='select'||!(f.options||[]).length)))Object.assign(o,{type:ty,options:op});return o})}
+/* ===== Detalle PrEP: sub-indikadór 9 tuir orden (kolun iha planilla → uza; la iha → kampu foun) ===== */
+const PSLOTS=[
+ ['Simu PrEP',/^\s*simu\s*(ona\s*)?prep\s*$|prep\s*received/i,'select',['Sim','Nao'],1],
+ ['Rajaun Simu PrEP',/r[ae][jz]aun|reason|grupu\s*risku/i,'text',[],0],
+ ['Data Simu PrEP',/data\s*simu\s*prep/i,'date',[],0],
+ ['Naran Vacina PrEP',/nar[a]?n\s*va[cs]ina|vaccine\s*\(?\s*name/i,'text',[],0],
+ ['Regime PrEP',/r[eé][gj]ime|regimen/i,'text',[],0],
+ ['PrEP Doze 1 (Data)',/d[oó][sz]e\s*1\b/i,'date',[],0],
+ ['PrEP Doze 2 (Data)',/d[oó][sz]e\s*2\b/i,'date',[],0],
+ ['PrEP Doze 3 (Data)',/d[oó][sz]e\s*3\b/i,'date',[],0],
+ ['PrEP Doze 4 (Data)',/d[oó][sz]e\s*(4|iv)\b/i,'date',[],0]];
+function prepFields(){const F=((META&&META.fields)||[]).filter(x=>isPrep(x)&&!isLong(x)&&!isKPR(x)),used=new Set(),t=f=>f.name+' | '+tt(f.name)+' | '+(f.label||'');
+ return PSLOTS.map(([lb,rx,ty,op,force])=>{const f=F.find(x=>!used.has(x)&&rx.test(t(x)));
+  if(!f)return {name:lb,label:lb,type:ty,options:op,group:'__PREP',virt:1};
+  used.add(f);const o=Object.assign({},f,{label:lb});if(force)Object.assign(o,{type:ty,options:op});return o})}
+const fieldsOfX=g=>{let L=fieldsOf(g);if(g==='__PEP')return L.map(pepOpt).map(f=>PEPL[f.name]?Object.assign({},f,{label:PEPL[f.name]}):f).map((f,i)=>[f,i]).sort((a,b)=>PEPR(a[0])-PEPR(b[0])||a[1]-b[1]).map(x=>x[0]);if(g==='__RIG')return rigFields().concat(L.filter(f=>isLong(f)||isKR(f)));if(g==='__PREP')return prepFields().concat(L.filter(f=>isLong(f)||isKPR(f)));if(g!=='__PREP')return L;
+L=L.map(f=>{const t=plb(f);if(PSIMU.test(t)&&f.type!=='select')return Object.assign({},f,{type:'select',options:['Sim','Nao']});if(PRAZ.test(t))return Object.assign({},f,{label:'Rajaun Simu PrEP'});return f});
+if(!L.some(f=>PD4.test(plb(f)))){const real=((META&&META.fields)||[]).find(f=>PD4.test(plb(f))),d4=real?Object.assign({},real,{label:'PrEP Dóze IV (Data)'}):{name:'PrEP Dóze IV (Data)',label:'PrEP Dóze IV (Data)',type:'date',options:[],group:'__PREP',virt:1};
+ let i=-1;L.forEach((f,k)=>{if(PD3.test(plb(f)))i=k});L.splice(i<0?L.length:i+1,0,d4)}
+else L=L.map(f=>PD4.test(plb(f))?Object.assign({},f,{label:'PrEP Dóze IV (Data)'}):f);
+/* Orden: Simu ona PrEP → Rajaun simu PrEP → Data simu PrEP → Naran Vacina PrEP → Regime PrEP → Dóze 1-4 → Komentáriu */
+const PRK=f=>{const t=plb(f);if(isLong(f))return 100;if(/r[ae][jz]aun/i.test(t))return 1;if(/data\s*simu\s*prep/i.test(t))return 2;if(PSIMU.test(t)||/simu\s*ona\s*prep/i.test(t))return 0;if(/nar[a]?n\s*va[cs]ina\s*prep/i.test(t))return 3;if(/r[ée][gj]ime\s*prep/i.test(t))return 4;const d=t.match(/d[oó]ze\s*(1|2|3|4|iv)\b/i);if(d)return 5+({'1':0,'2':1,'3':2,'4':3,'iv':3})[d[1].toLowerCase()];return 50};
+const PLBL=f=>{const t=plb(f);if(PSIMU.test(t))return 'Simu ona PrEP';if(/nar[a]?n\s*va[cs]ina\s*prep/i.test(t))return 'Naran Vacina PrEP';if(/r[ée][gj]ime\s*prep/i.test(t))return 'Regime PrEP';if(/data\s*simu\s*prep/i.test(t))return 'Data simu PrEP';return null};
+L=L.map(f=>{const l=PLBL(f);return l?Object.assign({},f,{label:l}):f}).map((f,i)=>[f,i]).sort((a,b)=>PRK(a[0])-PRK(b[0])||a[1]-b[1]).map(x=>x[0]);
+return L};
+const XKPRP=/koment[aá]riu\s*prep/i,isKPR=f=>XKPRP.test(f.name)||XKPRP.test(tt(f.name))||XKPRP.test(f.label||''),KPREP='KOMENTARIU PREP';
+function addRigComment(vals){return;addComment(vals,isKPR,/detalle\s*prep/i,KPREP,'PrEP');addComment(vals,isKR,/detalle\s*rig/i,KRIG,'RIG');addComment(vals,isKP,/detalle\s*pep/i,KPEP,'PEP');addComment(vals,isKE,/informasaun\s*e[xks]{1,2}po[sz]is+[aã]un|exposure/i,KEXP,'espozisaun');addComment(vals,isKA,/informasaun\s*anim[aá]l/i,KANI,'animál');addComment(vals,isKH,/ist[oó]ria\s*va[cs]ina/i,KHIS,'istória vasina raiva anterior');addNote(vals,/breve\s*ist[oó]ria\s*kl[ií]nika|brief\s*clinical\s*history/i,/evolusaun\s*kl[ií]nika|clinical\s*course/i,'BREVE ISTORIA KLINIKA PASIENTE','Breve istória klínika pasiente','Hakerek istória klínika badak husi pasiente…')}
+function addNote(vals,rx,secRx,key,label,ph){if(META.fields.some(f=>rx.test(f.name)||rx.test(tt(f.name))))return;const d=[...document.querySelectorAll('#view details.sec')].find(x=>secRx.test(x.querySelector('summary').textContent));if(!d)return;const l=document.createElement('label');l.className='fld';l.style.gridColumn='1/-1';l.innerHTML=`<span>${esc(label)}</span><textarea data-name="${key}" rows="4" placeholder="${esc(ph)}" style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:12.5px;background:var(--input);color:var(--tx);resize:vertical"></textarea>`;l.querySelector('textarea').value=vals[key]||'';d.querySelector('.fg').append(l)}
+function addComment(vals,isX,secRx,KRIG,lbl){if(META.fields.some(isX))return;const d=[...document.querySelectorAll('#view details.sec')].find(x=>secRx.test(x.querySelector('summary').textContent));if(!d)return;const l=document.createElement('label');l.className='fld';l.style.gridColumn='1/-1';l.innerHTML=`<span>Komentáriu</span><textarea data-name="${KRIG}" rows="3" placeholder="Hakerek komentáriu kona-ba ${lbl}…" style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:12.5px;background:var(--input);color:var(--tx);resize:vertical"></textarea>`;l.querySelector('textarea').value=vals[KRIG]||'';d.querySelector('.fg').append(l)}
+function hideFields(vals){return;META.fields.filter(isHid).forEach(f=>{const h=document.createElement('input');h.type='hidden';h.dataset.name=f.name;h.value=vals[f.name]||'';$('#view').append(h)})}
+const gLabel=g=>(SECS.find(x=>x[0]===g)||[0,null])[1]||tt(g);
+function renderForm(vals){CURPOST=lockPost()?U.post:(vals[POSTN]||'');const E=!!EDIT,gs=formGroups();$('#view').innerHTML=(E?`<div class="card" style="border-left:4px solid var(--p);display:flex;align-items:center;gap:10px"><span>✏️ Edita rejistu <b>#${EDIT}</b></span><button class="g s" style="margin-left:auto" onclick="go('manage')">Kansela</button></div>`:'')+gs.map((g,k)=>`<details class="sec" ${k<3?'open':''}><summary><span>${pf(esc(g))}</span></summary><div class="fg">${secFields(g).map(f=>fld(f,vals[f.name]||'',E)).join('')}</div></details>`).join('')+`<div class="bar"><button onclick="save()">${E?'💾 Rai mudansa':'✓ Guarda rejistu'}</button><button class="g" onclick="${E?"go('manage')":"form()"}">${E?'Kansela':'Hamoos formuláriu'}</button><span class="mut">Kampu automátiku sei prienxe bainhira rai.</span></div>`;const d=$('#fdob');if(d){d.onchange=()=>ageSync();ageSync(true)}hideFields(vals);addRigComment(vals);autoFill();wireAge();wireDMY(XEXD);wireDMY(XDOB);wireDMY(XSRIG);wireDMY(/data\s*vasina\s*raiva\s*ikus|last\s*rabies\s*vaccin/i);wireDMY(/data\s*simu\s*rig|date.*rig\s*(received|given)|^\s*rig\s*date/i);wireDMY(/(^|[^a-z])(data|date)([^a-z]|$)/i);document.querySelectorAll('#view [data-dt]').forEach(wireDMY1);wireTime();wireComment(XAEF);wireCoord()}
+/* ===== Kampu automátiku: Nú. rejistu, Data rejistu, Tinan (Semana epidemiolójika: petugas mak hatama) ===== */
+const ARX={no:/record\s*no|n[uú]m?(eru)?\.?\s*re[jg]istu/i,dt:/registration\s*date|data\s*re[jg]istu/i,yr:/reporting\s*year|tinan\s*re[jg]istu/i};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function aset(rx,v){document.querySelectorAll('#view [data-name]').forEach(e=>{const n=e.dataset.name;if(!rx.test(n)&&!rx.test(tt(n)))return;
+if(v!==undefined){if(e.tagName==='SELECT'&&![...e.options].some(o=>o.value==v))e.add(new Option(v,v));e.value=v}
+if(e.tagName==='SELECT'){e.classList.add('autof');e.tabIndex=-1}else{e.readOnly=true;e.classList.add('autof');if(v==='')e.placeholder='Karrega…'}})}
+/* ===== Postu Saúde: lista tuir Postu administrativu / SSK ===== */
+function hpList(){const g=isSp(FIL.post)||isSp(FIL.ssk)?[]:hpsOf(U.mun,FIL.post,FIL.ssk||(isFP()&&U.ssk)||''),d=(DATA||[]).filter(r=>r.munCat!=='out'&&pMatch(r)&&sMatch(r)).map(r=>String(r[HPK]||'').trim()).filter(Boolean);return [...new Set(g.concat(d))].sort()}
+/* ===== Priense dadus: Munisípiu → Postu administrativu → SSK → Postu Saúde =====
+   Munisípiu Baucau: lista Baucau de'it. Fora husi Munisípiu: Viqueque, Lautem, Dili, Seluk (husi 'informasaun jeografia').
+   lv: 0 = Munisípiu muda, 1 = Postu muda, 2 = SSK muda, -1 = dahuluk (rai valór ne'ebé iha ona) */
+function formLoc(lv){const q=n=>document.querySelector(`#view [data-name="${n}"]`),m=q(MUN),ps=q(POSTN),ss=q(SSK),hp=q(HPK);if(!ps)return;
+const out=!!m&&!!nz(m.value)&&nz(m.value)!==nz(U.mun),PU=isFP(),PL=lockPost(),init=lv===-1;
+const fill=(el,L,keep,ph)=>{if(!el||el.tagName!=='SELECT')return;const cur=el.value;let v=keep?cur:(L.includes(cur)?cur:'');if(init&&cur&&!L.includes(cur))L=L.concat(cur);
+el.innerHTML=`<option value="">${ph}</option>`+L.map(x=>`<option value="${esc(x)}">${esc(tt(x))}</option>`).join('');if(L.length===1&&!v&&el!==hp)v=L[0];el.value=L.includes(v)?v:''};
+if(lv<=0){fill(ps,out?outNames():(PL?[U.post]:postsOf(U.mun)),init,'—');if(PU&&U.ssk&&!out&&!ps.value&&postsOf(U.mun).includes(U.post))ps.value=U.post}
+const p=ps.value,pb=!out&&postsOf(U.mun).includes(p)?p:'';
+const LK=PU&&!!U.ssk;
+if(lv<=1){fill(ss,LK?[U.ssk]:PU?ssksOf(U.mun,U.post):out?outGeo('f',p):ssksOf(U.mun,pb),init,out||pb?'—':'Hili postu uluk');if(ss){const lk=LK;if(lk)ss.value=U.ssk;ss.classList.toggle('autof',lk);ss.tabIndex=lk?-1:0;ss.title=lk?'Fasilidade ita-nia konta (xave)':''}}
+if(lv<=2)fill(hp,LK?hpsOf(U.mun,'',U.ssk):PU?hpsOf(U.mun,U.post,ss?ss.value:''):out?outGeo('s',p,ss?ss.value:''):hpsOf(U.mun,pb,ss?ss.value:''),init,'—');
+CURPOST=p}
+function hpWire(){const q=n=>document.querySelector(`#view [data-name="${n}"]`);let hp=q(HPK);
+if(hp&&hp.tagName!=='SELECT'){const sel=document.createElement('select');sel.dataset.name=HPK;sel.innerHTML=hp.value?`<option value="${esc(hp.value)}">${esc(hp.value)}</option>`:'';sel.value=hp.value;hp.replaceWith(sel);hp=sel}
+const m=q(MUN),ps=q(POSTN),ss=q(SSK);if(m){if(!m.value)m.value=U.mun;m.onchange=()=>formLoc(0)}if(ps)ps.onchange=()=>formLoc(1);if(ss)ss.onchange=()=>formLoc(2);formLoc(-1)}
+/* ===== Semana epidemiolójika automátiku husi Data rejistu ===== */
+function weekSync(){const rd=document.querySelector('#view [data-name="Registration date"]'),wk=document.querySelector('#view [data-auto="Reporting week"],#view [data-name="Reporting week"]');if(!rd||!wk)return;
+const up=()=>{const v=parseD?parseD(rd.value):rd.value;wk.value=/^\d{4}-\d{2}-\d{2}$/.test(v)?String(wy(v)[1]):'';wk.placeholder='Automátiku husi data rejistu'};rd.addEventListener('change',up);rd.addEventListener('input',up);up()}
+async function autoFill(){weekSync();hpWire();if(EDIT){aset(ARX.no);return}
+const d=today(),[y,w]=wy(d);aset(ARX.no,'');
+let n='';try{const L=await api('getRecords');REC=L;const m=Math.max(0,...L.map(r=>parseInt(String(r.no).replace(/\D/g,''),10)).filter(x=>!isNaN(x)));n=String(m+1)}catch(e){}
+if(!EDIT)aset(ARX.no,n)}
+/* ===== Idade no Grupo idade automátiku husi Data moris ===== */
+const XDOB=/date\s*of\s*birth|data\s*moris/i,XAGG=/age\s*group|gru?po\s*idade/i,XAGE=/^\s*(age\b|idade)/i;
+const fnd=rx=>[...document.querySelectorAll('#view [data-name],#view [data-auto]')].find(e=>{const n=e.dataset.name||e.dataset.auto;return rx.test(n)||rx.test(tt(n))});
+function setv(e,v){if(!e)return;if(e.tagName==='SELECT'&&v!==''&&![...e.options].some(o=>o.value==v))e.add(new Option(v,v));e.value=v}
+function grpOpt(e,a){if(a===''||isNaN(a))return '';if(e&&e.tagName==='SELECT'){for(const o of e.options){const t=o.text+' '+o.value,n=(t.match(/\d+/g)||[]).map(Number);if(!o.value)continue;
+if(n.length>=2&&a>=n[0]&&a<=n[1])return o.value;if(n.length===1&&/[>+≥]|liu|over|more/i.test(t)&&a>=n[0])return o.value;if(n.length===1&&/[<≤]|menus|under/i.test(t)&&a<n[0])return o.value}}return grp(a)}
+const MONS={jan:1,fev:2,feb:2,mar:3,abr:4,apr:4,mai:5,may:5,jun:6,jul:7,ago:8,agu:8,aug:8,set:9,sep:9,out:10,oct:10,nov:11,dez:12,dec:12};
+/* Data → yyyy-mm-dd. Formatu: yyyy-mm-dd, dd/mm/yyyy, dd-Fulan-yyyy (ex. 24-Abr-1996). Data la válidu (31-Jun, ?-Jul) → '' */
+function parseD(v){v=String(v||'').trim();if(!v)return '';const ok=(y,mo,d)=>{const t=new Date(+y,+mo-1,+d);return t.getFullYear()==+y&&t.getMonth()==+mo-1&&t.getDate()==+d?y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0'):''};
+let m=v.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})(?:$|[T\s])/);if(m)return ok(m[1],m[2],m[3]);
+m=v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);if(m)return ok(m[3],m[2],m[1]);
+m=v.match(/^(\d{1,2})[\s\-\/.]+([A-Za-zçÇ]{3,})\.?[\s\-\/.]+(\d{4})$/);if(m){const mo=MONS[m[2].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').slice(0,3)];return mo?ok(m[3],mo,m[1]):''}
+return ''}
+function lockF(e){if(!e)return;e.classList.add('autof');e.tabIndex=-1;if(e.tagName==='INPUT')e.readOnly=true}
+function wireAge(){const dob=fnd(XDOB),age=[...document.querySelectorAll('#view [data-name],#view [data-auto]')].find(e=>{const n=e.dataset.name||e.dataset.auto;return(XAGE.test(n)||XAGE.test(tt(n)))&&!XAGG.test(n)&&!XAGG.test(tt(n))}),g=fnd(XAGG);if(!dob)return;
+if(dob.tagName==='INPUT'&&dob.type!=='date'){const iso=parseD(dob.value);if(!dob.value||iso){dob.type='date';dob.value=iso}}
+lockF(age);lockF(g);if(age&&age.tagName==='INPUT')age.placeholder='Automátiku';
+const run=init=>{const reg=parseD((fnd(ARX.dt)||{}).value)||parseD(EDITREG)||today(),d=parseD(dob.value);let a;if(init===true&&EDIT&&age&&age.value!==''){setv(g,grpOpt(g,parseFloat(age.value)));return}
+if(d){a=calcAge(d,reg);setv(age,String(a))}else{a=age&&age.value!==''?parseFloat(age.value):NaN;if(!EDIT)setv(age,'')}
+setv(g,grpOpt(g,a===''?NaN:a))};
+['change','input','blur'].forEach(ev=>dob.addEventListener(ev,()=>run()));run(true)}
+/* ===== Oras espozisaun: Oras + Minutu + AM/PM ===== */
+const XTIME=/oras\s*e[xks]{1,2}po[sz]is[aã]un|exposure\s*time/i;
+function wireTime(){const e=fnd(XTIME);if(!e||e.tagName!=='INPUT'||e.dataset.tw)return;e.dataset.tw=1;
+let h='',m='',ap='';const q=String(e.value||'').match(/(\d{1,2})\s*[:.h]\s*(\d{2})?\s*([AaPp])?\.?\s*[Mm]?/);
+if(q){let H=parseInt(q[1],10);m=q[2]||'00';if(q[3]){ap=q[3].toUpperCase()+'M';h=String(H%12||12)}else if(H<24){ap=H>=12?'PM':'AM';h=String(H%12||12)}}
+const op=(l,v,ph)=>`<option value="">${ph}</option>`+l.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
+const H=Array.from({length:12},(_,i)=>String(i+1)),M=Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
+const w=document.createElement('div');w.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px';
+w.innerHTML=`<select title="Oras">${op(H,h,'Oras')}</select><select title="Minutu">${op(M,m,'Min')}</select><select title="AM / PM">${op(['AM','PM'],ap,'AM/PM')}</select>`;
+e.type='hidden';e.after(w);const [sh,sm,sa]=w.querySelectorAll('select');
+const up=()=>{if(sh.value&&!sm.value)sm.value='00';e.value=sh.value&&sa.value?`${sh.value}:${sm.value||'00'} ${sa.value}`:''};
+[sh,sm,sa].forEach(x=>x.onchange=up)}
+/* ===== Data ho formatu dd/mm/yyyy (Data espozisaun, Data moris) ===== */
+const XEXD=/data\s*e[xks]{1,2}po[sz]is+[aã]un|exposure\s*date/i;
+const dmy=iso=>iso?iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):'';
+const dmyOk=v=>{const m=v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);if(!m)return '';const d=new Date(+m[3],+m[2]-1,+m[1]);return d.getFullYear()==+m[3]&&d.getMonth()==+m[2]-1&&d.getDate()==+m[1]?m[3]+'-'+m[2]+'-'+m[1]:''};
+function wireDMY(rx){[...document.querySelectorAll('#view [data-name]')].filter(e=>{const n=e.dataset.name;return rx.test(n)||rx.test(tt(n))}).forEach(wireDMY1)}
+function wireDMY1(e){if(!e||e.tagName!=='INPUT'||e.dataset.dmy||e.readOnly||e.disabled||e.type==='hidden'||e.type==='number'||e.closest('.autof'))return;e.dataset.dmy=1;const raw=String(e.value||'').trim(),iso=parseD(raw);e.type='hidden';e.value=iso||raw;
+const w=document.createElement('div');w.style.cssText='display:flex;gap:6px;position:relative';
+w.innerHTML=`<input placeholder="dd/mm/yyyy" inputmode="numeric" maxlength="20" autocomplete="off" value="${esc(iso?dmy(iso):raw)}" style="flex:1"><button type="button" class="g" title="Hili husi kalendáriu" style="padding:0 12px;flex-shrink:0">📅</button><input type="date" tabindex="-1" aria-hidden="true" style="position:absolute;right:0;bottom:0;opacity:0;width:1px;height:1px;pointer-events:none">`;
+e.after(w);const [t,btn,pk]=w.querySelectorAll('input,button');
+const set=()=>{const v=t.value.trim(),ok=dmyOk(v),keep=!ok&&!iso&&!!raw&&v===raw;e.value=ok||(keep?raw:'');t.style.borderColor=v&&!ok&&!keep?'#dc2626':'';t.title=v&&!ok?'Data la válidu — uza dd/mm/yyyy':'';e.dispatchEvent(new Event('change'))};
+t.addEventListener('input',()=>{const d=t.value.replace(/\D/g,'').slice(0,8);t.value=d.length>4?d.slice(0,2)+'/'+d.slice(2,4)+'/'+d.slice(4):d.length>2?d.slice(0,2)+'/'+d.slice(2):d;set()});
+btn.addEventListener('click',ev=>{ev.preventDefault();pk.value=e.value;try{pk.showPicker()}catch(x){pk.focus();pk.click()}});
+pk.addEventListener('change',()=>{t.value=dmy(pk.value);set()})}
+/* ===== Data simu RIG (dd/mm/yyyy) no Efeitu adversu post-RIG: Sim + komentáriu ===== */
+const XSRIG=/data\s*simu\s*rig/i,XAEF=/efeitu\s*advers[ou]\s*post[\s-]*rig|adverse.*\brig\b/i,SEP=' — ';
+function wireComment(rx){const e=fnd(rx);if(!e||e.tagName!=='SELECT'||e.dataset.cm)return;e.dataset.cm=1;
+const raw=e.value||'',i=raw.indexOf(SEP),base=i>=0?raw.slice(0,i):raw,com=i>=0?raw.slice(i+SEP.length):'';
+[...e.options].forEach(o=>{if(o.value&&o.value.includes(SEP))o.remove()});if(base&&![...e.options].some(o=>o.value===base))e.add(new Option(tt(base),base));e.value=base;
+const h=document.createElement('input');h.type='hidden';h.dataset.name=e.dataset.name;e.removeAttribute('data-name');e.after(h);
+const c=document.createElement('input');c.placeholder='Komentáriu: hakerek efeitu adversu ne\'ebé mosu';c.value=com;c.style.marginTop='6px';h.after(c);
+const yes=v=>/^(sim|yes|sin|iha)$/i.test(String(v).trim())||/^(sim|yes|sin|iha)$/i.test(String(tt(v)).trim());
+const up=()=>{const y=yes(e.value);c.hidden=!y;h.value=e.value?(y&&c.value.trim()?e.value+SEP+c.value.trim():e.value):''};
+e.addEventListener('change',up);c.addEventListener('input',up);up()}
+/* ===== Lokasi iha mapa: link ba Google Maps husi Latitude + Longitude ===== */
+function wireCoord(){const all=[...document.querySelectorAll('#view [data-name]')],m=rx=>all.find(e=>e.tagName==='INPUT'&&e.type!=='hidden'&&(rx.test(e.dataset.name)||rx.test(tt(e.dataset.name))));
+const la=m(/latitud/i),lo=m(/longitud/i);if(!la||!lo||la.dataset.geo)return;la.dataset.geo=1;
+const box=document.createElement('label');box.className='fld';box.innerHTML=`<span>Hare iha mapa</span><a target="_blank" rel="noopener" class="maplink">📍 Haree iha Google Maps</a><small class="mut" style="font-size:10.5px;margin-top:3px"></small>`;
+(la.closest('.fld')||la).after(box);const a=box.querySelector('a'),hint=box.querySelector('small');
+const num=v=>{v=String(v||'').trim().replace(',','.');return v===''?NaN:parseFloat(v)};
+const up=()=>{let y=num(la.value),x=num(lo.value);if(!isNaN(y)&&!isNaN(x)&&Math.abs(y)>90&&Math.abs(x)<=90){const t=y;y=x;x=t}
+const ok=!isNaN(y)&&!isNaN(x)&&Math.abs(y)<=90&&Math.abs(x)<=180;
+if(ok){a.href=`https://www.google.com/maps?q=${y},${x}`;a.classList.remove('off');hint.textContent=`${y.toFixed(5)}, ${x.toFixed(5)}`}else{a.removeAttribute('href');a.classList.add('off');hint.textContent=(la.value||lo.value)?'Koordenada la válidu':'Priense latitude no longitude uluk'}};
+[la,lo].forEach(e=>e.addEventListener('input',up));up()}
+function ageSync(init){const d=$('#fdob').value,a=$('#fage'),g=document.querySelector(`[data-auto="${AGG}"]`);if(init===true&&EDIT&&a&&a.value!==''){if(g)g.value=grp(a.value);return}if(d){a.value=calcAge(d,(EDITREG||new Date().toISOString().slice(0,10)));a.readOnly=true}else a.readOnly=false;if(g)g.value=grp(a.value);a.oninput=()=>{if(g)g.value=grp(a.value)}}
+let EDITREG='';function form(){EDITREG='';renderForm({})}
+async function save(){const vals={};document.querySelectorAll('[data-name]:not(:disabled)').forEach(e=>vals[e.dataset.name]=e.value);const r=await api('saveRecord',vals,EDIT);if(!r.ok){toast(r.error,1);return}toast('Rejistu #'+r.no+' rai ona.');DATA=null;EDIT?go('manage'):form();window.scrollTo(0,0)}
+let ADV={u:'',from:'',to:'',post:'',ssk:'',status:''},ADVOPEN=false;
+async function manage(){REC=await api('getRecords');if(ADV.u!==U.id)ADV={u:U.id,from:'',to:'',post:'',ssk:'',status:''};if(lockPost())ADV.post=U.post;mtable()}
+function mtable(){const lock=lockPost(),o=(l,x)=>l.map(i=>`<option ${i===x?'selected':''}>${esc(i)}</option>`).join('');$('#view').innerHTML=`<div class="card"><div class="fb" style="align-items:flex-end"><label style="flex:2">Buka<input id="q" placeholder="🔍  Naran, nú. rejistu, SSK…" oninput="mrows()"></label><button class="g" style="flex:0;white-space:nowrap;margin-bottom:1px" onclick="advToggle()">⚙ Buka avansadu <span id="vn" class="bd w"></span></button></div><div id="adv" class="fb" ${ADVOPEN?'':'hidden'} style="background:var(--soft);border:1px dashed var(--line);border-radius:12px;padding:12px;align-items:flex-end"><label>Data rejistu husi<input type="date" id="vf" value="${ADV.from}" onchange="advSet()"></label><label>Data rejistu to'o<input type="date" id="vt" value="${ADV.to}" onchange="advSet()"></label><label>Postu administrativu${isFP()&&U.ssk?`<select id="vp" disabled><option value="">🔒 ${esc(U.post)}</option></select>`:`<select id="vp" ${lock?'disabled':''} onchange="advPost()"><option value="">Postu hotu</option>${o(lock?[U.post]:postsOf(U.mun),ADV.post)}</select>`}</label><label>Hospital/SSK/Klinika Privada<select id="vs" onchange="advSet()"></select></label><label>Estadu<select id="vc" onchange="advSet()"><option value="">Hotu</option><option value="c" ${ADV.status==='c'?'selected':''}>Kompletu</option><option value="i" ${ADV.status==='i'?'selected':''}>Informasaun prinsipál falta</option></select></label><button class="g s" style="flex:0;margin-bottom:4px" onclick="advReset()">Reset</button></div><div class="tw"><table><tr><th>Nú. rejistu</th><th>Data rejistu</th><th>Naran kompletu</th><th>Hospital/SSK/Klinika Privada</th><th>Postu administrativu</th><th>Estadu</th><th>Asaun</th></tr><tbody id="mb"></tbody></table></div><p class="mut" id="mc"></p></div>`;advFac();mrows()}
+function advToggle(){ADVOPEN=!ADVOPEN;$('#adv').hidden=!ADVOPEN}
+function advFac(){$('#vs').innerHTML='<option value="">SSK hotu</option>'+sskList(ADV.post).map(x=>`<option ${x===ADV.ssk?'selected':''}>${esc(x)}</option>`).join('')}
+function advPost(){ADV.post=$('#vp').value;ADV.ssk='';advFac();mrows()}
+function advSet(){ADV.from=$('#vf').value;ADV.to=$('#vt').value;ADV.ssk=$('#vs').value;ADV.status=$('#vc').value;mrows()}
+function advReset(){ADV={u:U.id,from:'',to:'',post:lockPost()?U.post:'',ssk:'',status:''};$('#vf').value=$('#vt').value=$('#vc').value='';if(!lockPost())$('#vp').value='';advFac();mrows()}
+function mrows(){const q=$('#q').value.toLowerCase(),A=ADV,R=REC.filter(r=>(!q||(r.name+r.no+r.ssk+r.post).toLowerCase().includes(q))&&(!A.from||r.date>=A.from)&&(!A.to||r.date<=A.to)&&(!A.post||r.post===A.post)&&(!A.ssk||r.ssk===A.ssk)&&(!A.status||(A.status==='c'?!r.missing:r.missing>0))),n=[A.from||A.to,!isFP()&&A.post,A.ssk,A.status].filter(Boolean).length;$('#vn').textContent=n;$('#vn').hidden=!n;$('#mb').innerHTML=R.map(r=>`<tr><td><b>${esc(r.no)}</b></td><td>${esc(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.ssk)}</td><td>${esc(r.post)}</td><td>${r.missing?`<span class="bd w">Informasaun prinsipál falta ${r.missing}</span>`:'<span class="bd y">Kompletu</span>'}</td><td style="white-space:nowrap"><button class="s" onclick="edit('${esc(r.no)}')">Edita</button> <button class="s d" onclick="del('${esc(r.no)}')">Hamoos</button></td></tr>`).join('')||'<tr><td colspan=7 class="mut">Laiha rejistu</td></tr>';$('#mc').textContent='Rejistu '+R.length+' husi '+REC.length}
+async function edit(no){const r=await api('getRecord',no);if(!r.ok){toast(r.error,1);return}EDIT=no;EDITREG=r.vals[RD];go('input',1);renderForm(r.vals)}
+async function del(no){if(!await ask('Hamoos rejistu #'+no+'?'))return;const r=await api('deleteRecord',no);if(r.ok){toast('Rejistu hamoos ona.');DATA=null;manage()}else toast(r.error,1)}
+const LVLO=[['Post administrative','Focal Point'],['Municipality','Administradór'],['Host','Host']];
+async function accts(){if(!isHost()){go('overview');return}const L=await api('listAccounts'),MS=[...new Set(GEO.map(g=>g.m).filter(m=>!/^fora/i.test(m)))],o=(l,x)=>l.map(i=>`<option ${i===x?'selected':''}>${esc(i)}</option>`).join('');
+const bdg=l=>`<span class="bd ${l==='Host'?'n':l==='Municipality'?'w':'y'}">${esc(tt(l))}</span>`;
+$('#view').innerHTML=`<details class="sec" open><summary>➕ Aumenta konta</summary><div class="fg"><label class="fld"><span>ID</span><input id="ai" autocomplete="off"></label><label class="fld"><span>Email</span><input id="ae" autocomplete="off"></label><label class="fld"><span>Liafuan-pase</span><input id="ap" type="password" autocomplete="new-password"></label>
+<label class="fld"><span>Nivel uzuáriu</span><select id="al" onchange="aSync()">${LVLO.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label>
+<label class="fld"><span>Munisípiu</span><select id="am" onchange="aSync()">${o(MS,U.mun)}</select></label>
+<label class="fld" id="aow"><span>Postu administrativu</span><select id="ao" onchange="aSsk()"></select></label>
+<label class="fld" id="asw"><span>Hospital/SSK/Klinika Privada</span><select id="as"></select></label>
+<label class="fld"><span>Aprovasaun</span><select id="aa"><option value="Yes">Sim</option><option value="No">Lae</option></select></label></div>
+<p class="mut" style="margin:0 15px 10px;font-size:12px">Asaun: ✓ aprova · ✕ hasai aprovasaun · 🔑 troka liafuan-pase · 🏥 troka fasilidade (Focal Point) · 🗑 hamoos<br>👑 <b>Host</b>: asesu hotu no jere konta · 🛡️ <b>Administradór</b>: dadus hotu iha munisípiu, la iha Jestaun konta · 👤 <b>Focal Point</b>: de'it dadus husi nia Hospital/SSK/Klinika Privada (Munisípiu, Postu no SSK xave)</p>
+<div style="padding:0 15px 14px"><button onclick="addAcc()">Kria konta</button></div></details>
+<div class="card"><div class="tw"><table class="acc"><tr><th>ID</th><th>Email</th><th>Nivel</th><th>Munisípiu</th><th>Postu administrativu</th><th>Hospital/SSK/Klinika Privada</th><th>Aprovasaun</th><th>Asaun</th></tr>${L.map(a=>`<tr><td><b>${esc(a.id)}</b></td><td>${esc(a.email)}</td><td>${bdg(a.level)}</td><td>${esc(a.mun)}</td><td>${esc(a.level==='Post administrative'?a.post:'—')}</td><td>${a.level==='Post administrative'?(a.ssk?esc(a.ssk):'<span class="bd w">(postu tomak)</span>'):'—'}</td><td><span class="bd ${a.approval==='Yes'?'y':'n'}">${esc(tt(a.approval||'No'))}</span></td><td style="white-space:nowrap">${a.id===U.id?`<span class="bd y">Ita</span> <button class="s g" title="Troka liafuan-pase" onclick="pwAsk('${esc(a.id)}')">🔑</button>`:`<button class="s" title="Aprova konta" onclick="appr('${esc(a.id)}','Yes')">✓</button> <button class="s g" title="Hasai aprovasaun" onclick="appr('${esc(a.id)}','No')">✕</button> <button class="s g" title="Troka liafuan-pase" onclick="pwAsk('${esc(a.id)}')">🔑</button> ${a.level==='Post administrative'?`<button class="s g" title="Troka fasilidade (Postu / SSK)" onclick="areaAsk('${esc(a.id)}','${esc(a.mun)}','${esc(a.post)}','${esc(a.ssk||'')}')">🏥</button> `:''}<button class="s d" title="Hamoos konta" onclick="delAcc('${esc(a.id)}')">🗑</button>`}</td></tr>`).join('')}</table></div></div>`;aSync()}
+function aSync(){const fp=$('#al').value==='Post administrative';$('#aow').hidden=!fp;$('#asw').hidden=!fp;$('#ao').innerHTML=postsOf($('#am').value).map(x=>`<option>${esc(x)}</option>`).join('');aSsk()}
+function aSsk(){$('#as').innerHTML=ssksOf($('#am').value,$('#ao').value).map(x=>`<option>${esc(x)}</option>`).join('')}
+async function appr(id,v){const r=await api('setApproval',id,v);r.ok?accts():toast(r.error,1)}
+async function delAcc(id){if(!await ask('Hamoos konta "'+id+'"?'))return;const r=await api('deleteAccount',id);r.ok?accts():toast(r.error,1)}
+async function addAcc(){const fp=$('#al').value==='Post administrative';const r=await api('addAccount',{id:$('#ai').value,email:$('#ae').value,password:$('#ap').value,level:$('#al').value,mun:$('#am').value,post:fp?$('#ao').value:'',ssk:fp?$('#as').value:'',approval:$('#aa').value});r.ok?(toast('Konta kria ona.'),accts()):toast(r.error,1)}
+/* ===== Troka fasilidade konta Focal Point (Host) ===== */
+function areaAsk(id,mun,post,ssk){const d=document.createElement('div');d.className='md';const P=postsOf(mun);
+d.innerHTML=`<div style="max-width:360px"><p>🏥 Fasilidade ba <b>${esc(id)}</b></p><label class="fld"><span>Postu administrativu</span><select id="xp">${P.map(x=>`<option ${x===post?'selected':''}>${esc(x)}</option>`).join('')}</select></label><label class="fld"><span>Hospital/SSK/Klinika Privada</span><select id="xs"></select></label><small class="mut" style="display:block;margin:4px 0 12px">Focal Point haree de'it dadus husi fasilidade ne'e.</small><button class="g">Kansela</button> <button>Rai</button></div>`;
+const xp=d.querySelector('#xp'),xs=d.querySelector('#xs'),fs=()=>{xs.innerHTML=ssksOf(mun,xp.value).map(x=>`<option ${x===ssk?'selected':''}>${esc(x)}</option>`).join('')};xp.onchange=fs;fs();
+const b=d.querySelectorAll('button');b[0].onclick=()=>d.remove();b[1].onclick=async()=>{const r=await api('setAccountArea',id,xp.value,xs.value);if(r.ok){d.remove();toast('Fasilidade troka ona.');accts()}else toast(r.error,1)};document.body.append(d)}
+/* ===== Troka liafuan-pase ===== */
+function pwAsk(id){const d=document.createElement('div');d.className='md';d.innerHTML=`<div style="max-width:340px"><p>🔑 Liafuan-pase foun ba <b>${esc(id)}</b></p><input type="password" id="np1" placeholder="Liafuan-pase foun" autocomplete="new-password" style="margin-bottom:8px"><input type="password" id="np2" placeholder="Repete liafuan-pase" autocomplete="new-password"><small class="mut" style="display:block;margin:6px 0 12px">Karakter 8 ka liu, ho letra, númeru no karakter espesiál.</small><button class="g">Kansela</button> <button>Rai</button></div>`;
+const b=d.querySelectorAll('button');b[0].onclick=()=>d.remove();b[1].onclick=async()=>{const a=d.querySelector('#np1').value,c=d.querySelector('#np2').value;if(a!==c){toast('Liafuan-pase la hanesan.',1);return}const r=await api('setPassword',id,a);if(r.ok){d.remove();toast('Liafuan-pase troka ona.')}else toast(r.error,1)};document.body.append(d);d.querySelector('#np1').focus()}
+async function pwView(){const me=`<div class="card" style="max-width:520px;margin:0 auto 12px"><h4>🔒 Troka liafuan-pase</h4><p class="mut" style="text-align:center">Konta: <b>${esc(U.id)}</b> · ${esc(tt(U.level))} · ${esc(areaLbl())}</p><div style="text-align:center"><button onclick="pwAsk(U.id)">🔑 Troka ha'u-nia liafuan-pase</button></div></div>`;
+$('#view').innerHTML=me;if(U.level!=='Municipality'&&!isHost())return;let L=[];try{L=await api('listPwAccounts')}catch(e){return}if(CUR!=='pw')return;
+const lv=l=>l==='Host'?'Host':l==='Municipality'?'Administradór':'Focal Point';
+$('#view').innerHTML=me+`<div class="card"><h4>🔑 Troka liafuan-pase ba uzuáriu seluk</h4><div class="fb" style="margin:0 0 8px"><label style="flex:1">Buka<input id="pwq" placeholder="🔍 ID, nivel ka SSK…" oninput="pwFil()"></label></div><div class="tw"><table class="acc"><tr><th>ID</th><th>Nivel</th><th>Postu administrativu</th><th>Hospital/SSK/Klinika Privada</th><th>Asaun</th></tr><tbody id="pwb">${L.filter(a=>a.id!==U.id).map(a=>`<tr data-q="${esc((a.id+' '+lv(a.level)+' '+(a.post||'')+' '+(a.ssk||'')).toLowerCase())}"><td><b>${esc(a.id)}</b></td><td>${esc(lv(a.level))}</td><td>${esc(a.post||'—')}</td><td>${esc(a.ssk||'—')}</td><td><button class="s" onclick="pwAsk('${esc(a.id)}')">🔑 Troka</button></td></tr>`).join('')||'<tr><td colspan="5" class="mut">Laiha konta</td></tr>'}</tbody></table></div></div>`}
+function pwFil(){const q=$('#pwq').value.toLowerCase();document.querySelectorAll('#pwb tr').forEach(r=>r.hidden=!!q&&!(r.dataset.q||'').includes(q))}
+/* Bandeira Timor-Leste ne'ebé lalin iha pájina login */
+(()=>{const a=document.getElementById('auth');if(!a||a.querySelector('.tlwrap'))return;const w=document.createElement('div');w.className='tlwrap';w.setAttribute('aria-hidden','true');
+const N=36;let h='<span class="tlpole"></span><div class="tlflag">';for(let i=0;i<N;i++){const amp=(1.5+i*0.32).toFixed(2);h+=`<i style="--tlw:${N*100}%;background-position:${(i/(N-1)*100).toFixed(3)}% 0;--a:${amp}px;animation-delay:${(-i*0.075).toFixed(3)}s"></i>`}
+w.innerHTML=h+'</div>';a.prepend(w)})();
+</script>
